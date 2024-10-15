@@ -5,7 +5,13 @@ const app = new Hono()
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
-})
+});
+
+app.get('/hello/:name', (c) => {
+  const params = c.req.param
+  c.status(404);
+  return c.json({ params });
+});
 
 const port = 3000
 console.log(`Server is running on port ${port}`)
@@ -18,7 +24,7 @@ const serverType = serve({
 })
 
 // NOTE: implement graceful shutdown on process kill signal
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log("Graceful shutdown and cleanup");
-  serverType.close();
-})
+  serverType.close((err) => console.log(`Error trying to close connection ${err}`));
+});
