@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@effect/schema':
+        specifier: ^0.75.5
+        version: 0.75.5(effect@3.9.2)
+      '@hono/effect-validator':
+        specifier: ^1.1.0
+        version: 1.1.0(@effect/schema@0.75.5(effect@3.9.2))(hono@4.6.3)
       '@hono/node-server':
         specifier: ^1.13.1
         version: 1.13.1(hono@4.6.3)
@@ -29,6 +35,11 @@ importers:
         version: 4.19.1
 
 packages:
+
+  '@effect/schema@0.75.5':
+    resolution: {integrity: sha512-TQInulTVCuF+9EIbJpyLP6dvxbQJMphrnRqgexm/Ze39rSjfhJuufF7XvU3SxTgg3HnL7B/kpORTJbHhlE6thw==}
+    peerDependencies:
+      effect: ^3.9.2
 
   '@esbuild/aix-ppc64@0.23.1':
     resolution: {integrity: sha512-6VhYk1diRqrhBAqpJEdjASR/+WVRtfjpqKuNw11cLiaWpAT/Uu+nokB+UJnevzy/P9C/ty6AOe0dwueMrGh/iQ==}
@@ -174,6 +185,12 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@hono/effect-validator@1.1.0':
+    resolution: {integrity: sha512-sbwu5MJ8aKfPWeZ8YK4Je2xWhjm1H33tzJt7NA1vGJaSZeoePded7R6nuixJsMni4z36/0zZbV9zYXsR6QPxWg==}
+    peerDependencies:
+      '@effect/schema': '>=0.68.18'
+      hono: '>=4.4.13'
+
   '@hono/node-server@1.13.1':
     resolution: {integrity: sha512-TSxE6cT5RHnawbjnveexVN7H2Dpn1YaLxQrCOLCUwD+hFbqbFsnJBgdWcYtASqtWVjA+Qgi8uqFug39GsHjo5A==}
     engines: {node: '>=18.14.1'}
@@ -191,6 +208,10 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  fast-check@3.22.0:
+    resolution: {integrity: sha512-8HKz3qXqnHYp/VCNn2qfjHdAdcI8zcSqOyX64GOMukp7SL2bfzfeDKjSd+UyECtejccaZv3LcvZTm9YDD22iCQ==}
+    engines: {node: '>=8.0.0'}
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -202,6 +223,9 @@ packages:
   hono@4.6.3:
     resolution: {integrity: sha512-0LeEuBNFeSHGqZ9sNVVgZjB1V5fmhkBSB0hZrpqStSMLOWgfLy0dHOvrjbJh0H2khsjet6rbHfWTHY0kpYThKQ==}
     engines: {node: '>=16.9.0'}
+
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -224,6 +248,11 @@ packages:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
 snapshots:
+
+  '@effect/schema@0.75.5(effect@3.9.2)':
+    dependencies:
+      effect: 3.9.2
+      fast-check: 3.22.0
 
   '@esbuild/aix-ppc64@0.23.1':
     optional: true
@@ -297,6 +326,11 @@ snapshots:
   '@esbuild/win32-x64@0.23.1':
     optional: true
 
+  '@hono/effect-validator@1.1.0(@effect/schema@0.75.5(effect@3.9.2))(hono@4.6.3)':
+    dependencies:
+      '@effect/schema': 0.75.5(effect@3.9.2)
+      hono: 4.6.3
+
   '@hono/node-server@1.13.1(hono@4.6.3)':
     dependencies:
       hono: 4.6.3
@@ -334,6 +368,10 @@ snapshots:
       '@esbuild/win32-ia32': 0.23.1
       '@esbuild/win32-x64': 0.23.1
 
+  fast-check@3.22.0:
+    dependencies:
+      pure-rand: 6.1.0
+
   fsevents@2.3.3:
     optional: true
 
@@ -342,6 +380,8 @@ snapshots:
       resolve-pkg-maps: 1.0.0
 
   hono@4.6.3: {}
+
+  pure-rand@6.1.0: {}
 
   randombytes@2.1.0:
     dependencies:

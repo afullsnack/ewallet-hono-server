@@ -4,6 +4,8 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "@effect/schema": "^0.75.5",
+    "@hono/effect-validator": "^1.1.0",
     "@hono/node-server": "^1.13.1",
     "effect": "^3.9.2",
     "hono": "^4.6.3",
