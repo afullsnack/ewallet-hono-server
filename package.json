@@ -5,7 +5,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.1",
-    "hono": "^4.6.3"
+    "effect": "^3.9.2",
+    "hono": "^4.6.3",
+    "shamirs-secret-sharing-ts": "^1.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
