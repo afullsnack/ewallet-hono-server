@@ -1,22 +1,30 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger';
+import { prettyJSON } from 'hono/pretty-json';
 
 const app = new Hono()
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
+// TODO: init app with prelim configs
+app.use("*", cors())
+app.use("*", logger())
+app.use("*", prettyJSON())
+
+app.use("*", async (_, next) => {
+  // TODO: implement rate limiting/indempotency
+  await next()
 });
 
-app.get('/hello/:name', (c) => {
-  const params = c.req.param
-  c.status(404);
-  return c.json({ params });
-});
+app.use("*", async (_, next) => {
+  // TODO: implement basic security check, custom/business checks
+  await next()
+})
 
-const port = 3000
+// TODO: read port from configuration with effect/docker-compose
+const port = 8081
 console.log(`Server is running on port ${port}`)
-
-const serverType = serve({
+serve({
   fetch: app.fetch,
   port
 }, (info) => {
@@ -24,7 +32,7 @@ const serverType = serve({
 })
 
 // NOTE: implement graceful shutdown on process kill signal
-process.on('SIGINT', async () => {
-  console.log("Graceful shutdown and cleanup");
-  serverType.close((err) => console.log(`Error trying to close connection ${err}`));
-});
+// process.on('SIGINT', async () => {
+//   console.log("Graceful shutdown and cleanup");
+//   serverType.close((err) => console.log(`Error trying to close connection ${err}`));
+// });
