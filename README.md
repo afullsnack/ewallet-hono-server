@@ -1,8 +1,9 @@
 ```
-npm install
-npm run dev
+# Hono server application for EWallet
+pnpm install
+pnpm run dev
 ```
 
 ```
-open http://localhost:3000
+open http://localhost:{PORT}
 ```
