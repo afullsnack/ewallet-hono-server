@@ -1,12 +1,6 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { logger } from 'hono/logger';
-import { prettyJSON } from 'hono/pretty-json';
-import { authRoute } from './routes/auth';
 import { setupRouter } from './router';
-
-const app = new Hono()
+import app from "./app";
 
 setupRouter(app);
 // TODO: read port from configuration with effect/docker-compose
