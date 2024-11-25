@@ -34,7 +34,6 @@ app.onError((err, c) => {
     },
     500
   );
-  // return c.text("Error occured on the application", 500);
 })
 
 // TODO: read port from configuration with effect/docker-compose
