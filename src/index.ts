@@ -4,38 +4,11 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { authRoute } from './routes/auth';
+import { setupRouter } from './router';
 
 const app = new Hono()
 
-// TODO: init app with prelim configs
-app.use("*", cors())
-app.use("*", logger())
-app.use("*", prettyJSON())
-
-app.use("*", async (_, next) => {
-  // TODO: implement rate limiting/indempotency
-  await next()
-});
-
-app.use("*", async (_, next) => {
-  // TODO: implement basic security check, custom/business checks
-  await next()
-});
-
-app.route("/api/auth", authRoute);
-
-app.onError((err, c) => {
-  console.error(err);
-  return c.json(
-    {
-      status: "failed",
-      message: "Internal server error",
-      error: JSON.stringify(err, null, 4)
-    },
-    500
-  );
-})
-
+setupRouter(app);
 // TODO: read port from configuration with effect/docker-compose
 const port = 9001
 serve({
