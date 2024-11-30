@@ -14,7 +14,8 @@
     "effect": "^3.9.2",
     "hono": "^4.6.3",
     "pino": "^9.5.0",
-    "shamirs-secret-sharing-ts": "^1.0.2"
+    "shamirs-secret-sharing-ts": "^1.0.2",
+    "viem": "^2.21.53"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
