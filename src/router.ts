@@ -29,15 +29,18 @@ export function setupRouter(app: Hono) {
     // TODO: implement basic security check, custom/business checks
     await next()
   });
-  app.basePath("/api");
+  const v1App = app.basePath("/api/v1");
 
   // Routes;
-  app.route("/auth", authRoute);
+  v1App.route("/auth", authRoute);
 
 
   // Handlers
-  app.get("/health", health_check);
-  app.onError((err, c) => {
+  v1App.get("/health", health_check);
+  v1App.notFound((c) => {
+    return c.text(`Could not find the route, ${c.req.url}`);
+  });
+  v1App.onError((err, c) => {
     console.error(err);
     return c.json(
       {

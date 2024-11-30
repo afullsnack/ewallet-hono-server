@@ -38,6 +38,9 @@ importers:
       shamirs-secret-sharing-ts:
         specifier: ^1.0.2
         version: 1.0.2
+      uuid:
+        specifier: ^11.0.3
+        version: 11.0.3
       viem:
         specifier: ^2.21.53
         version: 2.21.53
@@ -1229,6 +1232,10 @@ packages:
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
+  uuid@11.0.3:
+    resolution: {integrity: sha512-d0z310fCWv5dJwnX1Y/MncBAqGMKEzlBb1AOf7z9K8ALnd0utBX/msg/fA0+sbyN1ihbMsLhrBlnl1ak7Wa0rg==}
+    hasBin: true
+
   viem@2.21.53:
     resolution: {integrity: sha512-0pY8clBacAwzc59iV1vY4a6U4xvRlA5tAuhClJCKvqA6rXJzmNMMvxQ0EG79lkHr7WtBEruXz8nAmONXwnq4EQ==}
     peerDependencies:
@@ -2177,6 +2184,8 @@ snapshots:
       fsevents: 2.3.3
 
   undici-types@6.19.8: {}
+
+  uuid@11.0.3: {}
 
   viem@2.21.53:
     dependencies:

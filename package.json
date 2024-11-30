@@ -2,6 +2,9 @@
   "name": "ewallet-server-hono",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "db:push": "npx drizzle-kit push",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
     "vitest": "vitest"
   },
   "dependencies": {
@@ -15,6 +18,7 @@
     "hono": "^4.6.3",
     "pino": "^9.5.0",
     "shamirs-secret-sharing-ts": "^1.0.2",
+    "uuid": "^11.0.3",
     "viem": "^2.21.53"
   },
   "devDependencies": {
