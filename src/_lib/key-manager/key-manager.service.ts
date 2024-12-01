@@ -8,7 +8,7 @@ export interface IKeyManagerService {
 };
 
 export class KeyManager implements IKeyManagerService {
-  constructor(private readonly shares: number, private readonly threshoold: number) { }
+  constructor(private readonly shares: number, private readonly threshold: number) { }
 
   getShares(secret: Buffer): any[] {
     try {
@@ -16,13 +16,15 @@ export class KeyManager implements IKeyManagerService {
         secret,
         {
           shares: this.shares,
-          threshold: this.threshoold
+          threshold: this.threshold
         }
       );
       return shares;
     } catch (err) {
       if (err instanceof TypeError) {
-        throw new Error('Getting shares failed with type error', { cause: err });
+        throw new Error('Getting shares failed with type error', {
+          cause: err
+        });
       }
       throw new Error('Failed to split');
     }
