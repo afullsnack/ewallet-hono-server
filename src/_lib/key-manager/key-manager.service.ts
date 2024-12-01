@@ -2,13 +2,21 @@
 // TODO: should adhere to strict contract interface
 // TODO: should contain small helper functions and resuable types
 import { split, combine } from "shamirs-secret-sharing-ts";
+import "dotenv/config";
 export interface IKeyManagerService {
   getShares(secret: Buffer): any[];
   recoverSecret(shares: any[]): Buffer;
 };
 
 export class KeyManager implements IKeyManagerService {
-  constructor(private readonly shares: number, private readonly threshold: number) { }
+  constructor(private readonly shares?: number, private readonly threshold?: number) {
+    if(!shares) {
+      this.shares = Number(process.env.KEY_SHARES!);
+    }
+    if(!threshold) {
+      this.threshold = Number(process.env.KEY_THRESHOLD!);
+    }
+  }
 
   getShares(secret: Buffer): any[] {
     try {
