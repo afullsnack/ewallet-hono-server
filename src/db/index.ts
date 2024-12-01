@@ -2,23 +2,24 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as schema from './schema';
 import { eq } from "drizzle-orm";
 
-const db = drizzle(process.env.DB_FILE_NAME!, {schema});
+// NOTE: Add schema to drizzle initialization so table types are available for repo functions
+const db = drizzle(process.env.DB_FILE_NAME!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
-const {usersTable, accountTable} = schema;
+const { usersTable, accountTable } = schema;
+type UserInsert = typeof usersTable.$inferInsert;
+type AccountInsert = typeof accountTable.$inferInsert;
 // Create User with Optional Wallet
-export async function createUserWithWallet(userData: typeof usersTable.$inferInsert
-// {
-//   username: string;
-//   email: string;
-  // wallet?: {
-  //   address: string;
-  //   balance?: string;
-  //   type: 'eoa' | 'contract';
-  //   shareA?: Buffer;
-  // };
-// }
+interface ICreateUserWithWallet {
+  userData: UserInsert;
+  accountData?: AccountInsert;
+}
+export async function createUserWithWallet(
+  {
+    userData,
+    accountData,
+  }: ICreateUserWithWallet
 ) {
   return await db.transaction(async (tx) => {
     // Insert User
@@ -28,15 +29,15 @@ export async function createUserWithWallet(userData: typeof usersTable.$inferIns
     }).returning();
 
     // Optionally Insert Wallet if provided
-    // if (userData.wallet) {
-    //   await tx.insert(wallets).values({
-    //     userId: insertedUser.id,
-    //     address: userData.wallet.address,
-    //     balance: userData.wallet.balance ?? '0',
-    //     type: userData.wallet.type,
-    //     shareA: userData.wallet.shareA,
-    //   });
-    // }
+    if (accountData) {
+      await tx.insert(accountTable).values({
+        userId: insertedUser.id,
+        networkType: accountData.networkType,
+        shareA: accountData.shareA,
+        shareB: accountData.shareB,
+        shareC: accountData.shareC,
+      });
+    }
 
     return insertedUser;
   });
@@ -44,11 +45,8 @@ export async function createUserWithWallet(userData: typeof usersTable.$inferIns
 
 // Update User
 export async function updateUser(
-  userId: string, 
-  updateData: Partial<{
-    username: string;
-    email: string;
-  }>
+  userId: string,
+  updateData: Partial<UserInsert>
 ) {
   const [updatedUser] = await db
     .update(usersTable)
@@ -61,13 +59,13 @@ export async function updateUser(
 
 // Update Wallet
 export async function updateWallet(
-  walletId: string, 
-  updateData: Partial<typeof accountTable.$inferInsert>
+  accountId: string,
+  updateData: Partial<AccountInsert>
 ) {
   const [updatedWallet] = await db
     .update(accountTable)
     .set(updateData)
-    .where(eq(accountTable.id, walletId))
+    .where(eq(accountTable.id, accountId))
     .returning();
 
   return updatedWallet;
@@ -86,9 +84,9 @@ export async function getUserWithWallets(userId: string) {
 }
 
 // Get Wallet with Associated User
-export async function getWalletWithUser(walletId: string) {
+export async function getWalletWithUser(accountId: string) {
   const result = await db.query.accountTable.findFirst({
-    where: eq(accountTable.id, walletId),
+    where: eq(accountTable.id, accountId),
     with: {
       user: true, // Populate associated user
     },
@@ -113,7 +111,7 @@ export async function deleteUserAndWallets(userId: string) {
   return await db.transaction(async (tx) => {
     // Delete associated wallets first
     await tx.delete(accountTable).where(eq(accountTable.userId, userId));
-    
+
     // Then delete the user
     const [deletedUser] = await tx.delete(usersTable)
       .where(eq(usersTable.id, userId))
@@ -125,7 +123,7 @@ export async function deleteUserAndWallets(userId: string) {
 
 // Add Wallet to Existing User
 export async function addWalletToUser(
-  userId: string, 
+  userId: string,
   walletData: Partial<{
     networkType: any,
     shareA: Buffer,
