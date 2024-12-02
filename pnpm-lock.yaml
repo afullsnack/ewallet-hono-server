@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@biconomy/sdk':
+        specifier: ^0.0.11
+        version: 0.0.11(@rhinestone/module-sdk@0.1.28(viem@2.21.53(typescript@5.7.2)))(typescript@5.7.2)(viem@2.21.53(typescript@5.7.2))
       '@effect/schema':
         specifier: ^0.75.5
         version: 0.75.5(effect@3.9.2)
@@ -20,6 +23,9 @@ importers:
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
+      '@rhinestone/module-sdk':
+        specifier: ^0.1.28
+        version: 0.1.28(viem@2.21.53(typescript@5.7.2))
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -43,7 +49,7 @@ importers:
         version: 11.0.3
       viem:
         specifier: ^2.21.53
-        version: 2.21.53
+        version: 2.21.53(typescript@5.7.2)
     devDependencies:
       '@types/node':
         specifier: ^20.11.17
@@ -62,6 +68,13 @@ packages:
 
   '@adraffy/ens-normalize@1.11.0':
     resolution: {integrity: sha512-/3DDPKHqqIqxUULp8yP4zODUY1i+2xvVWsv8A79xGWdCAG+8sb0hRh0Rk2QyOJUnnbyPUAZYcpBuRe3nS2OIUg==}
+
+  '@biconomy/sdk@0.0.11':
+    resolution: {integrity: sha512-YCAPx0+UAvTFpYsgAPyE198r1g2D1es+HJBMzQtuV/AW7AtDXkKyX6/TCNhwc1moraOCfdEOVk8sLJ82i3rhxQ==}
+    peerDependencies:
+      '@rhinestone/module-sdk': ^0.1.25
+      typescript: ^5
+      viem: ^2.20.0
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -708,6 +721,11 @@ packages:
     resolution: {integrity: sha512-1j6kQFb7QRru7eKN3ZDvRcP13rugwdxZqCjbiAVZfIJwgj2A65UmT4TgARXGlXgnRkORLTDTrO19ZErt7+QXgA==}
     engines: {node: ^14.21.3 || >=16}
 
+  '@rhinestone/module-sdk@0.1.28':
+    resolution: {integrity: sha512-Ob9qMs/scBrk6/X0dvb02kWqiCdP3Vau6PRNr3PP7PGxIIBFunJoVHuLWg4Tb/DHS3dCUXhuTk+XhObH1HjH+w==}
+    peerDependencies:
+      viem: ^2.0.0
+
   '@rollup/rollup-android-arm-eabi@4.27.4':
     resolution: {integrity: sha512-2Y3JT6f5MrQkICUyRVCw4oa0sutfAsgaSsb0Lmmy1Wi2y7X5vT9Euqw4gOsCyy0YfKURBg35nhUKZS4mDcfULw==}
     cpu: [arm]
@@ -806,6 +824,9 @@ packages:
 
   '@scure/bip39@1.4.0':
     resolution: {integrity: sha512-BEEm6p8IueV/ZTfQLp/0vhw4NPnT9oWf5+28nvmeUICjP99f4vr2d+qc7AVGDDtwRep6ifR43Yed9ERVmiITzw==}
+
+  '@silencelaboratories/walletprovider-sdk@0.3.0':
+    resolution: {integrity: sha512-5+yS95DwIufP0qOPuk81cXZ8gepcARXwuKRDAtjtf50JVX0MOMy6pR8f/1j5PATPdImzgI8905x3ZBgXfi+FKw==}
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
@@ -1179,6 +1200,9 @@ packages:
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
 
+  solady@0.0.235:
+    resolution: {integrity: sha512-JUEXLDG7ag3HmqUnrDG7ilhafH6R9bFPpwV63O2kH4UbnS2+gRGEOqqy4k01O7tHjo3MWkDD0cpG+UY9pjy/fQ==}
+
   sonic-boom@4.2.0:
     resolution: {integrity: sha512-INb7TM37/mAcsGmc9hyyI6+QR3rR1zVRu36B0NeGXKnOOLiZOfER5SA+N7X7k3yUYRzLWafduTDvJAfDswwEww==}
 
@@ -1224,9 +1248,17 @@ packages:
     resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
     engines: {node: '>=14.0.0'}
 
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
   tsx@4.19.1:
     resolution: {integrity: sha512-0flMz1lh74BR4wOvBjuh9olbnwqCPc35OOlfyzHba0Dc+QNUeWX/Gq2YTbnwcWPO3BMd8fkzRVrHcsR+a7z7rA==}
     engines: {node: '>=18.0.0'}
+    hasBin: true
+
+  typescript@5.7.2:
+    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   undici-types@6.19.8:
@@ -1235,6 +1267,14 @@ packages:
   uuid@11.0.3:
     resolution: {integrity: sha512-d0z310fCWv5dJwnX1Y/MncBAqGMKEzlBb1AOf7z9K8ALnd0utBX/msg/fA0+sbyN1ihbMsLhrBlnl1ak7Wa0rg==}
     hasBin: true
+
+  viem@2.21.32:
+    resolution: {integrity: sha512-2oXt5JNIb683oy7C8wuIJ/SeL3XtHVMEQpy1U2TA6WMnJQ4ScssRvyPwYLcaP6mKlrGXE/cR/V7ncWpvLUVPYQ==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   viem@2.21.53:
     resolution: {integrity: sha512-0pY8clBacAwzc59iV1vY4a6U4xvRlA5tAuhClJCKvqA6rXJzmNMMvxQ0EG79lkHr7WtBEruXz8nAmONXwnq4EQ==}
@@ -1332,6 +1372,17 @@ packages:
 snapshots:
 
   '@adraffy/ens-normalize@1.11.0': {}
+
+  '@biconomy/sdk@0.0.11(@rhinestone/module-sdk@0.1.28(viem@2.21.53(typescript@5.7.2)))(typescript@5.7.2)(viem@2.21.53(typescript@5.7.2))':
+    dependencies:
+      '@rhinestone/module-sdk': 0.1.28(viem@2.21.53(typescript@5.7.2))
+      '@silencelaboratories/walletprovider-sdk': 0.3.0(typescript@5.7.2)
+      typescript: 5.7.2
+      viem: 2.21.53(typescript@5.7.2)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
 
   '@drizzle-team/brocli@0.10.2': {}
 
@@ -1701,6 +1752,12 @@ snapshots:
 
   '@noble/hashes@1.5.0': {}
 
+  '@rhinestone/module-sdk@0.1.28(viem@2.21.53(typescript@5.7.2))':
+    dependencies:
+      solady: 0.0.235
+      tslib: 2.8.1
+      viem: 2.21.53(typescript@5.7.2)
+
   '@rollup/rollup-android-arm-eabi@4.27.4':
     optional: true
 
@@ -1768,6 +1825,17 @@ snapshots:
       '@noble/hashes': 1.5.0
       '@scure/base': 1.1.9
 
+  '@silencelaboratories/walletprovider-sdk@0.3.0(typescript@5.7.2)':
+    dependencies:
+      '@noble/curves': 1.6.0
+      js-base64: 3.7.7
+      viem: 2.21.32(typescript@5.7.2)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
   '@types/estree@1.0.6': {}
 
   '@types/node@20.16.7':
@@ -1818,7 +1886,9 @@ snapshots:
       loupe: 3.1.2
       tinyrainbow: 1.2.0
 
-  abitype@1.0.6: {}
+  abitype@1.0.6(typescript@5.7.2):
+    optionalDependencies:
+      typescript: 5.7.2
 
   assertion-error@2.0.1: {}
 
@@ -2049,15 +2119,17 @@ snapshots:
 
   on-exit-leak-free@2.1.2: {}
 
-  ox@0.1.2:
+  ox@0.1.2(typescript@5.7.2):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
       '@noble/curves': 1.6.0
       '@noble/hashes': 1.5.0
       '@scure/bip32': 1.5.0
       '@scure/bip39': 1.4.0
-      abitype: 1.0.6
+      abitype: 1.0.6(typescript@5.7.2)
       eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.7.2
     transitivePeerDependencies:
       - zod
 
@@ -2143,6 +2215,8 @@ snapshots:
 
   siginfo@2.0.0: {}
 
+  solady@0.0.235: {}
+
   sonic-boom@4.2.0:
     dependencies:
       atomic-sleep: 1.0.0
@@ -2176,6 +2250,8 @@ snapshots:
 
   tinyspy@3.0.2: {}
 
+  tslib@2.8.1: {}
+
   tsx@4.19.1:
     dependencies:
       esbuild: 0.23.1
@@ -2183,21 +2259,43 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  typescript@5.7.2: {}
+
   undici-types@6.19.8: {}
 
   uuid@11.0.3: {}
 
-  viem@2.21.53:
+  viem@2.21.32(typescript@5.7.2):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
+      '@scure/bip32': 1.5.0
+      '@scure/bip39': 1.4.0
+      abitype: 1.0.6(typescript@5.7.2)
+      isows: 1.0.6(ws@8.18.0)
+      webauthn-p256: 0.0.10
+      ws: 8.18.0
+    optionalDependencies:
+      typescript: 5.7.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
+
+  viem@2.21.53(typescript@5.7.2):
     dependencies:
       '@noble/curves': 1.6.0
       '@noble/hashes': 1.5.0
       '@scure/bip32': 1.5.0
       '@scure/bip39': 1.4.0
-      abitype: 1.0.6
+      abitype: 1.0.6(typescript@5.7.2)
       isows: 1.0.6(ws@8.18.0)
-      ox: 0.1.2
+      ox: 0.1.2(typescript@5.7.2)
       webauthn-p256: 0.0.10
       ws: 8.18.0
+    optionalDependencies:
+      typescript: 5.7.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
