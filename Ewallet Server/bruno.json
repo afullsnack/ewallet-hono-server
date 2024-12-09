@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "bruno_api_collections",
+  "name": "ewallet_collection",
   "type": "collection",
   "ignore": [
     "node_modules",

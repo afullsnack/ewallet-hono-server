@@ -21,6 +21,6 @@ export const honoLogger= async (c: Context, next: Next) => {
   const responseTime = Date.now() - start;
 
   logger.info(
-    `method: ${c.req.method}, path: ${c.req.url}, status: ${c.res.status}, resp_time: ${responseTime}`,
+    `method: ${c.req.method}, path: ${c.req.url}, status: ${c.res.status}, response_time: ${responseTime}`,
   )
 }

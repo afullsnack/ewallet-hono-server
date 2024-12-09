@@ -1,0 +1,16 @@
+meta {
+  name: Get gas fee
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://api.coingecko.com/api/v3/simple/price?ids=matic-network,ethereum,binancecoin,base,xend-finance&vs_currencies=usd,ngn
+  body: none
+  auth: none
+}
+
+params:query {
+  ids: matic-network,ethereum,binancecoin,base,xend-finance
+  vs_currencies: usd,ngn
+}
