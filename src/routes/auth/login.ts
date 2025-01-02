@@ -4,17 +4,18 @@
 import {Hono} from "hono";
 import { effectValidator } from "@hono/effect-validator";
 import {Schema} from "@effect/schema";
+import { logger } from "../../middlewares/logger";
+
+const loginHandler = new Hono();
 
 const Body = Schema.Struct({
   email: Schema.String,
   password: Schema.String,
 });
-
-const loginHandler = new Hono();
 loginHandler.post("/", effectValidator("json", Body),  async (c) => {
-  const reqBody = c.req.valid('json'); // NOTE: picks out only validated properties
-  console.log(await c.req.json(), "body json and parse");
-  if(!reqBody) throw new Error('Body not found');
+  const user = c.req.valid('json'); // NOTE: picks out only validated properties
+  logger.info(user);
+  if(!user) throw new Error('Body not found');
   return c.json({
     token: 'tkn_loginToken',
     sub: 'sadaosbdvbasodv'
