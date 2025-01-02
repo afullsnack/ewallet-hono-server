@@ -11,7 +11,7 @@ export const logger = pino({
   // level: "info",
   messageKey: "msg",
   redact: {
-    paths: ['user.email', 'user.password', 'user.name', 'user.phone'],
+    paths: ['user.email', 'user.password', 'user.name', 'user.phone', 'password', 'email'],
     censor: '[👻]'
   }
 });
