@@ -1,7 +1,8 @@
 import { logger } from "./logger";
 import {FailureResponse} from "../models/response";
-import {ErrorCode} from "../models/error_codes";
 import { Context, Next } from "hono";
+
+// return custom failed response when unhandled errors occur
 export const panicLogger = async (c: Context, next: Next) => {
   try {
     await next();
@@ -9,7 +10,7 @@ export const panicLogger = async (c: Context, next: Next) => {
     logger.error(err);
     const res: FailureResponse = {
       success: false,
-      code:ErrorCode.HANDLER_PANIC,
+      code: 500,
       message: "Internal Server Error",
     };
 
