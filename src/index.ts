@@ -17,7 +17,6 @@ const server = serve(
   }
 )
 
-// NOTE: implement graceful shutdown on process kill signal
 process.on('SIGINT', () => {
   server.close((err) => {
     if (err) {

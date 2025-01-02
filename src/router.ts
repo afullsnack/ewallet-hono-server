@@ -4,7 +4,7 @@ import { honoLogger } from "./middlewares/logger";
 import { panicLogger } from "./middlewares/panic";
 import { prettyJSON } from "hono/pretty-json";
 import { authRoute } from "./routes/auth";
-import { health_check } from "./handlers/health";
+import { healthCheck } from "./handlers/health";
 
 
 export function setupRouter(app: Hono) {
@@ -36,7 +36,7 @@ export function setupRouter(app: Hono) {
 
 
   // Handlers
-  v1App.get("/health", health_check);
+  v1App.get("/health", healthCheck);
   v1App.notFound((c) => {
     return c.text(`Could not find the route, ${c.req.url}`);
   });
