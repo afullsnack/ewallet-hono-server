@@ -1,9 +1,9 @@
 // TODO: Requirements
 //> 1. Init logto authentication module for signup and login with password and oauth providers
 //> 2. Implement SQLite DB schema's for account, user, tokens, e.t.c...
-import {Hono} from "hono";
+import { Hono } from "hono";
 import { effectValidator } from "@hono/effect-validator";
-import {Schema} from "@effect/schema";
+import { Schema } from "@effect/schema";
 import { logger } from "../../middlewares/logger";
 
 const loginHandler = new Hono();
@@ -12,14 +12,16 @@ const Body = Schema.Struct({
   email: Schema.String,
   password: Schema.String,
 });
-loginHandler.post("/", effectValidator("json", Body),  async (c) => {
-  const user = c.req.valid('json'); // NOTE: picks out only validated properties
-  logger.info(user);
-  if(!user) throw new Error('Body not found');
+loginHandler.post("/", effectValidator("json", Body), async (c) => {
+  const body = c.req.valid('json'); // NOTE: picks out only validated properties
+  logger.info(body);
   return c.json({
     token: 'tkn_loginToken',
-    sub: 'sadaosbdvbasodv'
+    sub: 'sadaosbdvbasodv',
+    user: {
+      email: body.email
+    }
   });
 });
 
-export {loginHandler};
+export { loginHandler };
