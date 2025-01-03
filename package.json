@@ -1,11 +1,12 @@
 {
   "name": "ewallet-server-hono",
   "scripts": {
-    "dev": "tsx watch src/index.ts | pino-pretty --colorize -l",
+    "dev": "pnpm with-env tsx watch src/index.ts | pino-pretty --colorize -l",
     "db:push": "npx drizzle-kit push",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
-    "vitest": "vitest"
+    "vitest": "vitest",
+    "with-env": "dotenv -e .env --"
   },
   "dependencies": {
     "@biconomy/sdk": "^0.0.11",
@@ -15,6 +16,7 @@
     "@libsql/client": "^0.14.0",
     "@rhinestone/module-sdk": "^0.1.28",
     "dotenv": "^16.4.5",
+    "dotenv-cli": "^8.0.0",
     "drizzle-orm": "^0.36.4",
     "effect": "^3.9.2",
     "hono": "^4.6.3",
