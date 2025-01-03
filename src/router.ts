@@ -5,9 +5,11 @@ import { panicLogger } from "./middlewares/panic";
 import { prettyJSON } from "hono/pretty-json";
 import { authRoute } from "./routes/auth";
 import { healthCheck } from "./handlers/health";
+import { showRoutes } from "hono/dev";
+import { Env } from "./app";
 
 
-export function setupRouter(app: Hono) {
+export function setupRouter(app: Hono<Env>) {
   // TODO: init app with prelim configs
   app.use("*", honoLogger);;
   app.use("*", panicLogger);
@@ -50,6 +52,10 @@ export function setupRouter(app: Hono) {
       },
       500
     );
-  })
+  });
+  showRoutes(v1App, {
+    verbose: true,
+    colorize: true,
+  });
 }
 

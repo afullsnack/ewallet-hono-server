@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { serve } from '@hono/node-server'
 import { setupRouter } from './router';
-import app from "./app";
+import appFactory from "./app";
 import { logger } from "./middlewares/logger";
 
+const app = appFactory.createApp();
 setupRouter(app);
 // TODO: read port from configuration with effect/docker-compose
 const port = 9001
