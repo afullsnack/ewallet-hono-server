@@ -2,11 +2,12 @@
 //> 1. Init logto authentication module for signup and login with password and oauth providers
 //> 2. Implement SQLite DB schema's for account, user, tokens, e.t.c...
 import { Hono } from "hono";
+import appFactory from "../../app";
 import { effectValidator } from "@hono/effect-validator";
 import { Schema } from "@effect/schema";
 import { logger } from "../../middlewares/logger";
 
-const loginHandler = new Hono();
+const loginHandler = appFactory.createApp();
 
 const Body = Schema.Struct({
   email: Schema.String,
