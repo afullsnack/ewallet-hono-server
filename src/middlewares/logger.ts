@@ -1,4 +1,4 @@
-import { Context, Next } from "hono";
+import { createMiddleware } from "hono/factory";
 import { pino } from "pino";
 // const formatters = {
 //   level(label: string, _num: number) {
@@ -16,7 +16,7 @@ export const logger = pino({
   }
 });
 
-export const honoLogger= async (c: Context, next: Next) => {
+export const honoLogger = createMiddleware(async (c, next) => {
   const start = Date.now();
   await next();
   const responseTime = Date.now() - start;
@@ -29,4 +29,4 @@ export const honoLogger= async (c: Context, next: Next) => {
       response_time: `${responseTime}ms`
     },
   )
-}
+})

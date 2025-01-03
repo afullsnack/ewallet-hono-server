@@ -1,12 +1,12 @@
 import { logger } from "./logger";
-import {FailureResponse} from "../models/response";
-import { Context, Next } from "hono";
+import { FailureResponse } from "../models/response";
+import { createMiddleware } from "hono/factory";
 
 // return custom failed response when unhandled errors occur
-export const panicLogger = async (c: Context, next: Next) => {
+export const panicLogger = createMiddleware(async (c, next) => {
   try {
     await next();
-  } catch(err) {
+  } catch (err) {
     logger.error(err);
     const res: FailureResponse = {
       success: false,
@@ -16,4 +16,4 @@ export const panicLogger = async (c: Context, next: Next) => {
 
     return c.json(res);
   }
-}
+})
