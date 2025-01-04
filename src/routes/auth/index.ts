@@ -4,6 +4,6 @@ import { loginHandler } from "./login";
 
 const authRoute = appFactory.createApp();
 
-authRoute.route("/login", loginHandler);
+authRoute.post("/login", ...loginHandler);
 
 export { authRoute };
