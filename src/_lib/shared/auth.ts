@@ -3,9 +3,9 @@ import { LogtoConfig, CookieStorage, ClientAdapter } from "@logto/node";
 import { logger } from "../../middlewares/logger";
 
 export const authConfig: LogtoConfig = {
-  endpoint: ``,
-  appId: ``,
-  appSecret: ``
+  endpoint: process.env.LOGTO_APP_ENDPOINT!,
+  appId: process.env.LOGTO_APP_ID!,
+  appSecret: process.env.LOGTO_APP_SECRET!,
 } satisfies LogtoConfig;
 
 const storage = new CookieStorage({
