@@ -16,6 +16,9 @@ export type Env = {
     DB_FILE_NAME: string;
     KEY_SHARES: number;
     KEY_THRESHOLD: number;
+    LOGTO_APP_ID: string;
+    LOGTO_APP_SECRET: string;
+    LOGTO_APP_ENDPOINT: string;
   },
   Variables: {
     dbRepo: {
