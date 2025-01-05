@@ -1,5 +1,5 @@
-import LogtoClient, { PersistKey } from "@logto/node/edge";
-import { LogtoConfig, CookieStorage, ClientAdapter } from "@logto/node";
+import LogtoClient from "@logto/node/edge";
+import { LogtoConfig, CookieStorage } from "@logto/node";
 import { logger } from "../../middlewares/logger";
 import type { Context } from "hono";
 import {setCookie, getCookie} from "hono/cookie";
@@ -53,5 +53,8 @@ export class LogtoAuthAdapter implements ILogtoService {
       this.client.getAccessToken(),
     ]);
     return [userinfo, accessToken];
+  }
+  get getConfig() {
+    return this.client.logtoConfig;  
   }
 }
