@@ -6,11 +6,12 @@
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:studio": "npx drizzle-kit studio --verbose",
-    "vitest": "pnpm with-env vitest run",
+    "test": "pnpm with-env vitest run",
     "with-env": "dotenv -e .env --"
   },
   "dependencies": {
     "@biconomy/sdk": "^0.0.11",
+    "@effect/platform": "^0.64.0",
     "@effect/schema": "^0.75.5",
     "@hono/effect-validator": "^1.1.0",
     "@hono/node-server": "^1.13.1",
