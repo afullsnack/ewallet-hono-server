@@ -26,10 +26,11 @@ export class LogtoAuthAdapter implements ILogtoService {
   private endpoint = process.env.LOGTO_APP_ENDPOINT!;
   private appId = process.env.LOGTO_APP_ID!;
   private appSecret = process.env.LOGTO_APP_SECRET!;
+  public auth = {};
 
-  constructor(c: Context<Env>) { }
+  constructor(c?: Context<Env>) { }
 
-  async getAccessToken() {
+  async generateAccessToken() {
     return pipe(
       HttpClientRequest.post(`${this.endpoint}/oidc/token`),
       HttpClientRequest.acceptJson,
@@ -37,14 +38,25 @@ export class LogtoAuthAdapter implements ILogtoService {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Basic ${Buffer.from(`${this.appId}:${this.appSecret}`).toString('base64')}`
       }),
-      HttpClientRequest.setUrlParams({
-        grant_type: 'client_credentials',
-        resource: `${this.endpoint}/api`,
-        scope: 'all'
-      }),
+      HttpClientRequest.urlParamsBody({
+        'grant_type': 'client_credentials',
+        'resource': `${this.endpoint}/api`,
+        'scope': 'all'
+      }), // url params body
       HttpClient.fetch,
+      Effect.tap((response) => Effect.gen(function*(){
+        const json = yield* response.json;
+        console.log(json, ":::json");
+      })),
       Effect.andThen(HttpClientResponse.schemaBodyJson(TokenResponse, { errors: 'all' })),
       Effect.scoped,
+      Effect.catchAll((e) => Effect.fail(e)),
+      Effect.andThen((value) => {
+        this.auth = {
+          token: value.access_token,
+          type: value.token_type,
+        };
+      }),
       Effect.runPromise
     )
   }
