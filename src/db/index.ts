@@ -33,7 +33,7 @@ export async function createUserWithWallet(
     if (accountData) {
       await tx.insert(accountTable).values({
         userId: insertedUser.id,
-        networkType: accountData.networkType,
+        network: accountData.network,
         shareA: accountData.shareA,
         shareB: accountData.shareB,
         shareC: accountData.shareC,
@@ -126,7 +126,7 @@ export async function deleteUserAndWallets(userId: string) {
 export async function addWalletToUser(
   userId: string,
   walletData: Partial<{
-    networkType: any,
+    network: any,
     shareA: Buffer,
     shareB: Buffer,
     shareC: Buffer,
@@ -134,7 +134,7 @@ export async function addWalletToUser(
 ) {
   const [newWallet] = await db.insert(accountTable).values({
     userId,
-    networkType: walletData.networkType,
+    network: walletData.network,
     shareA: walletData.shareA,
     shareB: walletData.shareB,
     shareC: walletData.shareC,
