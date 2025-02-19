@@ -1,0 +1,36 @@
+
+version: "3.9"
+services:
+  # Note: If you are assigning a custom name to your db service on the line below, make sure it does not contain underscores
+  ewallet-db:
+    image: "postgres:latest"
+    env_file:
+      - ./.env
+    container_name: ewallet-postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: ${DEV_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DEV_POSTGRES_DB}
+    ports:
+      - 5433:5432
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "${DEV_POSTGRES_USER}",
+          "-d",
+          "${DEV_POSTGRES_DB}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app_network:
+    driver: bridge
+  asc_network:
+    driver: bridge

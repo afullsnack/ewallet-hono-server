@@ -22,6 +22,7 @@ interface ILogtoService {
   }: { username: string; email: string; password: string; }): Promise<any>;
   login({ email, password }: { email: string; password: string; }): Promise<any>
 }
+
 export class LogtoAuthAdapter implements ILogtoService {
   private endpoint = process.env.LOGTO_APP_ENDPOINT!;
   private appId = process.env.LOGTO_APP_ID!;

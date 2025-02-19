@@ -1,9 +1,9 @@
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from './schema';
 import { eq } from "drizzle-orm";
 
 // NOTE: Add schema to drizzle initialization so table types are available for repo functions
-const db = drizzle(process.env.DB_FILE_NAME!, { schema });
+const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
@@ -26,6 +26,7 @@ export async function createUserWithWallet(
     const [insertedUser] = await tx.insert(usersTable).values({
       username: userData.username,
       email: userData.email,
+      logtoUserId: userData.logtoUserId
     }).returning();
 
     // Optionally Insert Wallet if provided
