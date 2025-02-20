@@ -66,9 +66,6 @@ importers:
         specifier: ^2.21.53
         version: 2.21.53(typescript@5.7.2)
     devDependencies:
-      '@types/node':
-        specifier: ^20.11.17
-        version: 20.16.7
       '@types/pg':
         specifier: ^8.11.11
         version: 8.11.11

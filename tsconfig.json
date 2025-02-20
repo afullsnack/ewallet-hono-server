@@ -1,14 +1,53 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "types": [
-      "node"
+    "noUncheckedIndexedAccess": true,
+    "declarationMap": true,
+    "declaration": true,
+    "target": "esnext",
+    "module": "nodenext",
+    "lib": [
+      "esnext"
     ],
+    "allowJs": true,
+    "checkJs": true,
+    "outDir": "dist",
+    "rootDir": "./src",
+    "removeComments": true,
+    "strict": false,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "moduleResolution": "nodenext",
+    "baseUrl": ".",
+    "paths": {},
+    "typeRoots": [
+      "node_modules/@types",
+      "./types"
+    ],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedParameters": false,
+    "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/",
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-  }
+    "jsxImportSource": "hono/jsx"
+  },
+  "include": [
+    "src/**/*",
+    "src/**/*.ts",
+    "bin/*.ts",
+    "src/**/*.json",
+    "dist"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }
