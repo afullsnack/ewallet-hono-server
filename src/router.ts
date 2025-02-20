@@ -7,6 +7,7 @@ import { authRoute } from "./routes/auth";
 import { healthCheck } from "./handlers/health";
 import { showRoutes } from "hono/dev";
 import { Env } from "./app";
+import { guardianRoute } from "./routes/guardians";
 
 
 export function setupRouter(app: Hono<Env>) {
@@ -35,6 +36,7 @@ export function setupRouter(app: Hono<Env>) {
 
   // Routes;
   v1App.route("/auth", authRoute);
+  v1App.route("/guardian", guardianRoute);
 
 
   // Handlers
