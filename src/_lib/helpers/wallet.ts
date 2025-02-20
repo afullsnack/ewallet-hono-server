@@ -22,7 +22,7 @@ interface CreateHDAccountsOptions {
   /** Network to create account for */
   network?: string
 }
-interface HDAccount {
+export interface HDAccount {
   address: Address
   privateKey: Address
   publicKey: any | Address
