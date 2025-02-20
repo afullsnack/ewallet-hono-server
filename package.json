@@ -21,6 +21,7 @@
     "bip32": "5.0.0-rc.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
+    "bitcore-lib": "^10.8.0",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^8.0.0",
     "drizzle-orm": "^0.39.3",
@@ -38,6 +39,7 @@
     "viem": "^2.21.53"
   },
   "devDependencies": {
+    "@types/bitcore-lib": "^0.15.6",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.4",
     "pino-pretty": "^13.0.0",

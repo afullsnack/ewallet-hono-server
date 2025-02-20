@@ -36,6 +36,7 @@ export const accountTable = pgTable('wallets_table', {
   network: text('network_type', { enum: supportedNetworks }).notNull(),
   chainId: integer(),
   address: text(),
+  mnemonic: text().notNull(),
   shareA: bytea('share_a'), // our db only stores share_a
   shareB: bytea('share_b'), // sits on users device
   shareC: bytea('share_c'), // backup - QR Code or Guardian
