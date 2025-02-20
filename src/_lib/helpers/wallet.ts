@@ -19,6 +19,8 @@ interface CreateHDAccountsOptions {
   basePath?: string
   /** Password for extra security (optional) */
   password?: string
+  /** Network to create account for */
+  network?: string
 }
 interface HDAccount {
   address: Address
@@ -39,14 +41,14 @@ export async function createHDAccounts({
   basePath = "m/44'/60'/0'/0",
 }: CreateHDAccountsOptions = {}): Promise<{
   mnemonic: string
-  accounts: (HDAccount & {privateKey: Address; index: number; path: string})[]
+  accounts: HDAccount[]
 }> {
   try {
     // Create HD wallet from mnemonic
     const account = mnemonicToAccount(mnemonic)
     const hdKey = account.getHdKey();
 
-    const accounts: (HDAccount & {privateKey: Address; index: number; path: string})[] = []
+    const accounts: HDAccount[] = []
 
     // Derive specified number of accounts
     for (let i = startIndex; i < startIndex + numberOfAccounts; i++) {
@@ -107,7 +109,6 @@ export function isValidMnemonic(mnemonic: string): boolean {
  * Retrieves an account at a specific HD path
  * @param mnemonic Mnemonic phrase
  * @param path HD path
- * @param password Optional password
  * @returns HD account details
  */
 export async function getAccountAtPath(
