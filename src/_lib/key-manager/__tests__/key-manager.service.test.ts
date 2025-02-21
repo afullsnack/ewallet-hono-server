@@ -1,7 +1,7 @@
 import {describe, test, expect} from "vitest";
 import { KeyManager } from "../key-manager.service";
 
-describe("Given a share of 3 and threshold of 2 generate split secrets and recombine", () => {
+describe("Given a share of 3 and threshold of 2 split secret and recombine", () => {
   const keyManager = new KeyManager();
   const privateKey = 'pk_sol230343nef9shdcnsdb20be2b0csc';
   let shares: Array<Buffer>;
