@@ -1,8 +1,8 @@
 import { HDAccount } from "../helpers/wallet";
 
 export interface AccountCreationResult {mnemonic: string; accounts: HDAccount[]};
-interface IBaseChainStrategy {
-  createAccount: (path: string) => Promise<AccountCreationResult>;
+export interface IBaseChainStrategy {
+  createAccount: (path?: string) => Promise<AccountCreationResult>;
   send: () => Promise<void>;
   receive: () => Promise<string>;
 }
