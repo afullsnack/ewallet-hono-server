@@ -95,3 +95,9 @@ export const WORD_LIST = [
   'impact', 'impose', 'improve', 'impulse', 'inch', 'include', 'income', 'increase', 'index', 'indicate',
   'indoor', 'industry', 'infant', 'inflict', 'inform', 'inhale', 'inherit', 'initial', 'inject', 'injury',
   'inmate', 'inner', 'innocent', 'input']
+
+
+export type Network =
+  | 'evm'
+  | 'btc'
+  | 'tron'
