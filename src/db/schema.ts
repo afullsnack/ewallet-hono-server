@@ -35,7 +35,6 @@ export const accountTable = pgTable('wallets_table', {
   id: tableId(),
   userId: text('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
   network: text('network_type', { enum: supportedNetworks }).notNull(),
-  chainId: integer(),
   address: text(),
   mnemonic: text().notNull(),
   shareA: bytea('share_a'), // our db only stores share_a
