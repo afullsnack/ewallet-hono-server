@@ -1,4 +1,4 @@
-import { IBaseChainStrategy } from "./base.strategy";
+import { AccountCreationInput, IBaseChainStrategy } from "./base.strategy";
 import { Network } from "../helpers/config";
 import { EVMChainStrategy } from "./evm.strategy";
 
@@ -16,9 +16,9 @@ export class WalletContext {
     }
   }
 
-  async createAccount() {
+  async createAccount(params:AccountCreationInput) {
     try {
-      const creationResult = await this.strategy.createAccount();
+      const creationResult = await this.strategy.createAccount(params);
       return creationResult;
     }
     catch(error: any) {
