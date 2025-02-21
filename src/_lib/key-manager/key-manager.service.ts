@@ -18,7 +18,7 @@ export class KeyManager implements IKeyManagerService {
     }
   }
 
-  getShares(secret: Buffer): any[] {
+  getShares(secret: Buffer): Buffer[] {
     try {
       const shares = split(
         secret,
@@ -38,7 +38,7 @@ export class KeyManager implements IKeyManagerService {
     }
   }
 
-  recoverSecret(shares: any[]): Buffer {
+  recoverSecret(shares: Buffer[]): Buffer {
     try {
       const recovered = combine(shares);
       return recovered;
