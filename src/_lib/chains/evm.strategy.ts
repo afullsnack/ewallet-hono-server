@@ -1,6 +1,6 @@
 import {AccountCreationResult, BaseChainStrategy} from "./base.strategy";
 import {createHDAccounts} from "../helpers/wallet";
-
+import bip39 from "bip39";
 
 export class EVMChainStrategy extends BaseChainStrategy {
 
@@ -9,6 +9,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
   // remove parameter requirements if no use
   async createAccount(_: string): Promise<AccountCreationResult> {
       const {mnemonic, accounts} = await createHDAccounts({
+        mnemonic: bip39.generateMnemonic(),
         numberOfAccounts: 1,
         startIndex: 0,
         basePath: this.PATH
