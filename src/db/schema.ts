@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 // TODO: move to network domain
 const supportedNetworks = [
   'evm',
+  'btc',
   'solana',
   'tron',
 ] as const;

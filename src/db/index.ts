@@ -9,7 +9,9 @@ export { db };
 // -----------  db repo functions  -------- 
 const { usersTable, accountTable } = schema;
 type UserInsert = typeof usersTable.$inferInsert;
+type UserUpdate = typeof usersTable.$inferSelect;
 type AccountInsert = typeof accountTable.$inferInsert;
+type AccountUpdate = typeof accountTable.$inferSelect;
 // Create User with Optional Wallet
 interface ICreateUserWithWallet {
   userData: UserInsert;
@@ -24,7 +26,6 @@ export async function createUserWithWallet(
   return await db.transaction(async (tx) => {
     // Insert User
     const [insertedUser] = await tx.insert(usersTable).values({
-      username: userData.username,
       email: userData.email,
       logtoUserId: userData.logtoUserId
     }).returning();
@@ -34,9 +35,7 @@ export async function createUserWithWallet(
       await tx.insert(accountTable).values({
         userId: insertedUser.id,
         network: accountData.network,
-        shareA: accountData.shareA,
-        shareB: accountData.shareB,
-        shareC: accountData.shareC,
+        mnemonic: accountData.mnemonic
       });
     }
 
@@ -47,7 +46,7 @@ export async function createUserWithWallet(
 // Update User
 export async function updateUser(
   userId: string,
-  updateData: Partial<UserInsert>
+  updateData: Partial<UserUpdate>
 ) {
   const [updatedUser] = await db
     .update(usersTable)
@@ -61,7 +60,7 @@ export async function updateUser(
 // Update Wallet
 export async function updateWallet(
   accountId: string,
-  updateData: Partial<AccountInsert>
+  updateData: Partial<AccountUpdate>
 ) {
   const [updatedWallet] = await db
     .update(accountTable)
@@ -124,21 +123,14 @@ export async function deleteUserAndWallets(userId: string) {
 
 // Add Wallet to Existing User
 export async function addWalletToUser(
-  userId: string,
-  walletData: Partial<{
-    network: any,
-    shareA: Buffer,
-    shareB: Buffer,
-    shareC: Buffer,
-  }>
+  walletData: Partial<AccountUpdate>
 ) {
   const [newWallet] = await db.insert(accountTable).values({
-    userId,
+    userId: walletData.userId,
     network: walletData.network,
-    shareA: walletData.shareA,
-    shareB: walletData.shareB,
-    shareC: walletData.shareC,
-  }).returning();
+    mnemonic: walletData.mnemonic,
+    ...walletData
+  }).returning({address: accountTable.address});
 
   return newWallet;
 }
