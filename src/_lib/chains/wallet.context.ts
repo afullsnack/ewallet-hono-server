@@ -2,15 +2,14 @@ import { IBaseChainStrategy } from "./base.strategy";
 import { Network } from "../helpers/config";
 import { EVMChainStrategy } from "./evm.strategy";
 
-
 export class WalletContext {
   // map strategy to network:w
-  private strategies: Record<Network, IBaseChainStrategy>;
+  private strategy: IBaseChainStrategy;
 
   constructor(private network: Network) {
     switch(network) {
       case 'evm':
-        this.strategies[network] = new EVMChainStrategy()
+        this.strategy = new EVMChainStrategy();
         break;
       default:
         throw new Error('Network strategy not found');
@@ -19,7 +18,7 @@ export class WalletContext {
 
   async createAccount() {
     try {
-      const creationResult = await this.strategies[this.network].createAccount();
+      const creationResult = await this.strategy.createAccount();
       return creationResult;
     }
     catch(error: any) {
