@@ -143,7 +143,7 @@ export async function addWalletToUser(
     network: walletData.network,
     mnemonic: walletData.mnemonic,
     ...walletData
-  }).returning({address: accountTable.address});
+  }).returning({address: accountTable.address, id: accountTable.id});
 
   return newWallet;
 }
