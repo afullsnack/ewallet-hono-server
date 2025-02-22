@@ -1,9 +1,11 @@
-import { AccountCreationInput, AccountCreationResult, BaseChainStrategy } from "./base.strategy";
+import { AccountCreationInput, AccountCreationResult, AccountRecoveryInput, AccountRecoveryResult, BaseChainStrategy } from "./base.strategy";
 import { createHDAccounts } from "../helpers/wallet";
 import bip39 from "bip39";
 import { CryptoUtil } from "../helpers/hasher";
-import { KeyManager, IKeyManagerService } from "../key-manager/key-manager.service";
-import { addWalletToUser } from "src/db";
+import { KeyManager } from "../key-manager/key-manager.service";
+import { addWalletToUser, getWalletWithUser } from "../../db";
+import { privateKeyToAddress } from "viem/accounts";
+import { Hex } from "viem";
 
 export class EVMChainStrategy extends BaseChainStrategy {
 
@@ -31,7 +33,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
       hashedPassword = CryptoUtil.hash(params.password);
       const shares = new KeyManager().getShares(Buffer.from(encryptedPk));
       await addWalletToUser({
-        userId: 'user-id',
+        userId: 'user_sandovbasobdh0284nv9sdbviuisdv',
         mnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
         address: accounts[0].address,
@@ -41,11 +43,15 @@ export class EVMChainStrategy extends BaseChainStrategy {
         recoveryPassword: hashedPassword,
         isBackedUp: true
       });
+      return {
+        mnemonic,
+        accounts
+      }
     }
     // split unsecure acccount
     const shares = new KeyManager().getShares(Buffer.from(accounts[0].privateKey));
     await addWalletToUser({
-      userId: 'user-id',
+      userId: 'user_sandovbasobdh0284nv9sdbviuisdv',
       mnemonic, // enecrypt with password as well
       network: this.networkSlug as any,
       address: accounts[0].address,
@@ -58,6 +64,26 @@ export class EVMChainStrategy extends BaseChainStrategy {
       mnemonic,
       accounts
     }
+  }
+
+
+  async recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult & {address: string}> {
+    const account = await getWalletWithUser(params.walletId);
+    const isValidPassword = CryptoUtil.verify(account.recoveryPassword, params.password);
+
+    if(isValidPassword) {
+
+      const encryptedPK = new KeyManager().recoverSecret([params.backupShare, account.shareA])
+
+      const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
+      return {
+        encryptedPrivateKey: encryptedPK.toString(),
+        privateKey,
+        address: privateKeyToAddress(privateKey as Hex),
+      }
+    }
+
+    throw new Error('Password is not valid');
   }
 
   // send logic for EVM chains, implement with viem

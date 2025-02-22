@@ -95,6 +95,19 @@ export async function getWalletWithUser(accountId: string) {
   return result;
 }
 
+export async function getWallet(accountId: string) {
+  try {
+  const result = await db.query.accountTable.findFirst({
+    where: eq(accountTable.id, accountId),
+  });
+  return result;
+  }
+  catch(error: any) {
+    console.log(error, {action: 'get-wallet'});
+    throw new Error('Failed to get wallet', {cause: error});
+  }
+}
+
 // List All Users with Their Wallets
 export async function listUsersWithWallets() {
   const results = await db.query.usersTable.findMany({

@@ -1,4 +1,4 @@
-import { AccountCreationInput, IBaseChainStrategy } from "./base.strategy";
+import { AccountCreationInput, AccountRecoveryInput, IBaseChainStrategy } from "./base.strategy";
 import { Network } from "../helpers/config";
 import { EVMChainStrategy } from "./evm.strategy";
 
@@ -23,6 +23,18 @@ export class WalletContext {
     }
     catch(error: any) {
       console.log(error, {action: 'create-account', network: this.network});
+      throw error;
+    }
+  }
+
+
+  async recoverAccount(params: AccountRecoveryInput) {
+    try {
+      const recoveryResult = await this.strategy.recoverAccount(params);
+      return recoveryResult;
+    }
+    catch(error: any) {
+      console.error(error, {action: 'recover-account', network: this.network});
       throw error;
     }
   }
