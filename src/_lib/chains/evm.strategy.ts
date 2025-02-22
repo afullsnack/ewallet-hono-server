@@ -13,7 +13,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
   private networkSlug = 'evm';
 
   // remove parameter requirements if no use
-  async createAccount(params: AccountCreationInput): Promise<AccountCreationResult> {
+  async createAccount(params: AccountCreationInput): Promise<AccountCreationResult & {accountId: string}> {
     const { mnemonic, accounts } = await createHDAccounts({
       mnemonic: params.mnemonic ?? bip39.generateMnemonic(),
       numberOfAccounts: 1,
@@ -32,8 +32,8 @@ export class EVMChainStrategy extends BaseChainStrategy {
       encryptedPk = CryptoUtil.encrypt(accounts[0].privateKey, params.password);
       hashedPassword = CryptoUtil.hash(params.password);
       const shares = new KeyManager().getShares(Buffer.from(encryptedPk));
-      await addWalletToUser({
-        userId: 'user_sandovbasobdh0284nv9sdbviuisdv',
+      const result = await addWalletToUser({
+        userId: params.userId,
         mnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
         address: accounts[0].address,
@@ -44,14 +44,15 @@ export class EVMChainStrategy extends BaseChainStrategy {
         isBackedUp: true
       });
       return {
+        accountId: result.id,
         mnemonic,
         accounts
       }
     }
     // split unsecure acccount
     const shares = new KeyManager().getShares(Buffer.from(accounts[0].privateKey));
-    await addWalletToUser({
-      userId: 'user_sandovbasobdh0284nv9sdbviuisdv',
+    const result = await addWalletToUser({
+      userId: params.userId,
       mnemonic, // enecrypt with password as well
       network: this.networkSlug as any,
       address: accounts[0].address,
@@ -61,6 +62,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
     });
 
     return {
+      accountId: result.id,
       mnemonic,
       accounts
     }

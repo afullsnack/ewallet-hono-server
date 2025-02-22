@@ -38,4 +38,7 @@ export class WalletContext {
       throw error;
     }
   }
+
+
+  async useAccount() {} // TODO: for internal transactions that require the private key without user adding password
 }
