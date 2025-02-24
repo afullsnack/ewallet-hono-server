@@ -3,8 +3,8 @@
     "noUncheckedIndexedAccess": true,
     "declarationMap": true,
     "declaration": true,
-    "target": "esnext",
-    "module": "nodenext",
+    "target": "es2020",
+    "module": "commonjs",
     "lib": [
       "esnext"
     ],
@@ -13,7 +13,7 @@
     "outDir": "dist",
     "rootDir": "./src",
     "removeComments": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
