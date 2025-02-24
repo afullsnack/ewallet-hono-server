@@ -9,7 +9,9 @@
     "test": "pnpm with-env vitest run",
     "with-env": "dotenv -e .env --"
   },
+  "type": "module",
   "dependencies": {
+    "@biconomy/abstractjs": "^0.1.0",
     "@biconomy/sdk": "^0.0.11",
     "@effect/platform": "^0.64.0",
     "@effect/schema": "^0.75.5",
@@ -17,7 +19,7 @@
     "@hono/node-server": "^1.13.1",
     "@libsql/client": "^0.14.0",
     "@logto/node": "^3.1.0",
-    "@rhinestone/module-sdk": "^0.1.28",
+    "@rhinestone/module-sdk": "^0.2.3",
     "bip32": "5.0.0-rc.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
