@@ -4,7 +4,6 @@ import { pipe, Effect } from "effect";
 import { Schema } from "@effect/schema";
 import { HttpClient, HttpClientResponse, HttpClientRequest } from "@effect/platform"
 import { Context } from "hono";
-import { errors } from "effect/Brand";
 
 
 const TokenResponse = Schema.Struct({
@@ -45,7 +44,7 @@ export class LogtoAuthAdapter implements ILogtoService {
         'scope': 'all'
       }), // url params body
       HttpClient.fetch,
-      Effect.tap((response) => Effect.gen(function*(){
+      Effect.tap((response) => Effect.gen(function*() {
         const json = yield* response.json;
         console.log(json, ":::json");
       })),
@@ -63,8 +62,9 @@ export class LogtoAuthAdapter implements ILogtoService {
   }
 
   async register({ username, email, password }: { username: string; email: string; password: string; }): Promise<{}> {
-    logger.info(username, email, password);
-    return Promise.all([]);
+    // handle register flow
+    logger.info(":register config", username, email, password);
+    return Promise.any([]);
   }
 
   async login({ email, password }: { email: string; password: string; }): Promise<any> {

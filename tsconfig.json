@@ -3,8 +3,8 @@
     "noUncheckedIndexedAccess": true,
     "declarationMap": true,
     "declaration": true,
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "nodenext",
     "lib": [
       "esnext"
     ],
@@ -17,7 +17,7 @@
     "noEmit": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {},
     "typeRoots": [
