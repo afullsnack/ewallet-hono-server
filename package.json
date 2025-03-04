@@ -19,6 +19,7 @@
     "@hono/node-server": "^1.13.1",
     "@libsql/client": "^0.14.0",
     "@rhinestone/module-sdk": "^0.2.3",
+    "better-auth": "^1.2.2",
     "bip32": "5.0.0-rc.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
