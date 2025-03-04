@@ -7,11 +7,11 @@ const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
-const { usersTable, accountTable } = schema;
-type UserInsert = typeof usersTable.$inferInsert;
-type UserUpdate = typeof usersTable.$inferSelect;
-type AccountInsert = typeof accountTable.$inferInsert;
-type AccountUpdate = typeof accountTable.$inferSelect;
+const { user, wallet } = schema;
+type UserInsert = typeof user.$inferInsert;
+type UserUpdate = typeof user.$inferSelect;
+type AccountInsert = typeof wallet.$inferInsert;
+type AccountUpdate = typeof wallet.$inferSelect;
 // Create User with Optional Wallet
 interface ICreateUserWithWallet {
   userData: UserInsert;
@@ -25,14 +25,16 @@ export async function createUserWithWallet(
 ) {
   return await db.transaction(async (tx) => {
     // Insert User
-    const [insertedUser] = await tx.insert(usersTable).values({
+    const [insertedUser] = await tx.insert(user).values({
       email: userData.email,
-      logtoUserId: userData.logtoUserId
+      emailVerified: userData.emailVerified
     }).returning();
+
+    if(!insertedUser) throw new Error('Could not insert user');
 
     // Optionally Insert Wallet if provided
     if (accountData) {
-      await tx.insert(accountTable).values({
+      await tx.insert(wallet).values({
         userId: insertedUser.id,
         network: accountData.network,
         mnemonic: accountData.mnemonic
@@ -49,9 +51,9 @@ export async function updateUser(
   updateData: Partial<UserUpdate>
 ) {
   const [updatedUser] = await db
-    .update(usersTable)
+    .update(user)
     .set(updateData)
-    .where(eq(usersTable.id, userId))
+    .where(eq(user.id, userId))
     .returning();
 
   return updatedUser;
@@ -63,9 +65,9 @@ export async function updateWallet(
   updateData: Partial<AccountUpdate>
 ) {
   const [updatedWallet] = await db
-    .update(accountTable)
+    .update(wallet)
     .set(updateData)
-    .where(eq(accountTable.id, accountId))
+    .where(eq(wallet.id, accountId))
     .returning();
 
   return updatedWallet;
@@ -73,8 +75,8 @@ export async function updateWallet(
 
 // Get User with All Wallets
 export async function getUserWithWallets(userId: string) {
-  const result = await db.query.usersTable.findFirst({
-    where: eq(usersTable.id, userId),
+  const result = await db.query.user.findFirst({
+    where: eq(user.id, userId),
     with: {
       accounts: true, // Populate all wallets
     },
@@ -85,8 +87,8 @@ export async function getUserWithWallets(userId: string) {
 
 // Get Wallet with Associated User
 export async function getWalletWithUser(accountId: string) {
-  const result = await db.query.accountTable.findFirst({
-    where: eq(accountTable.id, accountId),
+  const result = await db.query.wallet.findFirst({
+    where: eq(wallet.id, accountId),
     with: {
       user: true, // Populate associated user
     },
@@ -97,8 +99,8 @@ export async function getWalletWithUser(accountId: string) {
 
 export async function getWallet(accountId: string) {
   try {
-  const result = await db.query.accountTable.findFirst({
-    where: eq(accountTable.id, accountId),
+  const result = await db.query.wallet.findFirst({
+    where: eq(wallet.id, accountId),
   });
   return result;
   }
@@ -110,7 +112,7 @@ export async function getWallet(accountId: string) {
 
 // List All Users with Their Wallets
 export async function listUsersWithWallets() {
-  const results = await db.query.usersTable.findMany({
+  const results = await db.query.user.findMany({
     with: {
       accounts: true,
     },
@@ -123,11 +125,11 @@ export async function listUsersWithWallets() {
 export async function deleteUserAndWallets(userId: string) {
   return await db.transaction(async (tx) => {
     // Delete associated wallets first
-    await tx.delete(accountTable).where(eq(accountTable.userId, userId));
+    await tx.delete(wallet).where(eq(wallet.userId, userId));
 
     // Then delete the user
-    const [deletedUser] = await tx.delete(usersTable)
-      .where(eq(usersTable.id, userId))
+    const [deletedUser] = await tx.delete(user)
+      .where(eq(user.id, userId))
       .returning();
 
     return deletedUser;
@@ -138,12 +140,12 @@ export async function deleteUserAndWallets(userId: string) {
 export async function addWalletToUser(
   walletData: Partial<AccountUpdate>
 ) {
-  const [newWallet] = await db.insert(accountTable).values({
-    userId: walletData.userId,
-    network: walletData.network,
-    mnemonic: walletData.mnemonic,
+  const [newWallet] = await db.insert(wallet).values({
+    userId: walletData.userId!,
+    mnemonic: walletData.mnemonic!,
+    network: walletData.network!,
     ...walletData
-  }).returning({address: accountTable.address, id: accountTable.id});
+  }).returning({address: wallet.address, id: wallet.id});
 
   return newWallet;
 }
