@@ -21,7 +21,7 @@ const bytea = customType<{ data: Buffer; notNull: false; default: false }>({
 });
 
 const tableId = () => text('id').primaryKey().$defaultFn(() => uuidv4());
-export const user = pgTable("users_table", {
+export const user = pgTable("users", {
   id: tableId(),
   email: text().notNull().unique(),
   name: text('name'),
@@ -34,7 +34,7 @@ export const user = pgTable("users_table", {
   isFullyOnboarded: boolean().default(false),
 });
 
-export const wallet = pgTable('wallets_table', {
+export const wallet = pgTable('wallets', {
   id: tableId(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   network: text('network_type', { enum: supportedNetworks }).notNull(),
