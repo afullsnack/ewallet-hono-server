@@ -9,6 +9,7 @@ import { showRoutes } from "hono/dev";
 import { Env } from "./app";
 import { guardianRoute } from "./routes/guardians";
 import { walletRoute } from "./routes/wallet";
+import { auth } from "./_lib/shared/auth";
 
 
 export function setupRouter(app: Hono<Env>) {
@@ -20,18 +21,13 @@ export function setupRouter(app: Hono<Env>) {
     origin: "*",
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["*"],
+    exposeHeaders: ['Content-Length'],
     maxAge: 86400,
     credentials: true,
   }))
 
-  app.use("*", async (_, next) => {
-    // TODO: implement rate limiting/indempotency
-    await next()
-  });
-
-  app.use("*", async (_, next) => {
-    // TODO: implement basic security check, custom/business checks
-    await next()
+  app.on(["POST", "GET"], '/api/auth/*', (c) => {
+    return auth.handler(c.req.raw);
   });
   const v1App = app.basePath("/api/v1");
 

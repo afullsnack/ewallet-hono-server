@@ -8,6 +8,7 @@ import {
   addWalletToUser,
   deleteUserAndWallets,
 } from "./db/index";
+import {auth} from "./_lib/shared/auth"
 import { env } from "hono/adapter";
 import { Context } from "hono";
 
@@ -21,6 +22,8 @@ export type Env = {
     LOGTO_APP_ENDPOINT: string;
   },
   Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null;
     dbRepo: {
       createUserWithWallet: typeof createUserWithWallet;
       updateUser: typeof updateUser;
@@ -52,6 +55,18 @@ const app = createFactory<Env>({
         addWalletToUser,
         deleteUserAndWallets,
       });
+
+      // set session
+      const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+      if(!session) {
+        c.set('user', null);
+        c.set('session', null);
+        return await next();
+      }
+
+      c.set('user', session.user);
+      c.set('session', session.session);
       await next();
     })
   },
