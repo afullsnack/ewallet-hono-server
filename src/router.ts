@@ -9,6 +9,7 @@ import { showRoutes } from "hono/dev";
 import { Env } from "./app";
 import { guardianRoute } from "./routes/guardians";
 import { walletRoute } from "./routes/wallet";
+import { userRoute } from "./routes/user";
 import { auth } from "./_lib/shared/auth";
 
 
@@ -26,7 +27,23 @@ export function setupRouter(app: Hono<Env>) {
     credentials: true,
   }))
 
-  app.on(["POST", "GET"], '/api/auth/*', (c) => {
+  app.use("*", async (c, next) => {
+    // set session
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    console.log(session, c.req.raw.headers, ":::session from middleware handler");
+
+    if (!session) {
+      c.set('user', null);
+      c.set('session', null);
+      return next();
+    }
+
+    c.set('user', session.user);
+    c.set('session', session.session);
+    return next();
+  });
+
+  app.on(["POST", "GET"], '/api/*', (c) => {
     return auth.handler(c.req.raw);
   });
   const v1App = app.basePath("/api/v1");
@@ -35,6 +52,7 @@ export function setupRouter(app: Hono<Env>) {
   v1App.route("/auth", authRoute);
   v1App.route("/guardian", guardianRoute);
   v1App.route("/wallet", walletRoute);
+  v1App.route("/user", userRoute);
 
 
   // Handlers
