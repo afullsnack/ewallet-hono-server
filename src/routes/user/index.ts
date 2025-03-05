@@ -3,10 +3,10 @@ import { logger } from "../../middlewares/logger";
 import appFactory from "../../app";
 import { updateUserHandlers } from "./update";
 import { getUserWithWallets } from "../../db";
-import { auth } from "src/_lib/shared/auth";
 
 const userRoute = appFactory.createApp();
 
+// middleware to check request is by authorized user
 userRoute.use(async (c, next) => {
   const session = c.get('session');
   if(!session) {
@@ -15,15 +15,16 @@ userRoute.use(async (c, next) => {
   await next();
 });
 
-// get user
+// get user with current session
 const getUserHandlers = appFactory.createHandlers(async (c) => {
   const session = c.get('session');
   if (!session) {
-    throw new HTTPException(404, { message: 'User not found' });
+    throw new HTTPException(404, { message: 'User session not found' });
   }
-  const fetchUser = await getUserWithWallets(session.userId)
+  const user = await getUserWithWallets(session.userId)
+  if(!user) throw new HTTPException(404, {message: 'User was not found in db'});
 
-  return c.json(fetchUser, 200);
+  return c.json(user, 200);
 })
 
 userRoute.post('/update', ...updateUserHandlers);
