@@ -6,7 +6,6 @@ import {
   type Address,
 } from 'viem/accounts'
 import { toHex } from 'viem'
-import { WORD_LIST } from './config'
 
 interface CreateHDAccountsOptions {
   /** Mnemonic phrase to use. If not provided, a new one will be generated */
