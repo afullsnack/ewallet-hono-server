@@ -28,7 +28,7 @@ export const user = pgTable("users", {
   emailVerified: boolean('email_verified').notNull(),
   image: text('image'),
   username: text().unique(),
-  createAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().$onUpdateFn(() => new Date(Date.now()).toISOString()),
   metadata: json(), // will hold a json array of custom networks and token data
   isFullyOnboarded: boolean().default(false),
