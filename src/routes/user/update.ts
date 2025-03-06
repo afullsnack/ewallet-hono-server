@@ -5,7 +5,7 @@ import { updateUser } from "src/db";
 import { HTTPException } from "hono/http-exception";
 
 const Body = Schema.Struct({
-  username: Schema.NonEmptyTrimmedString
+  username: Schema.NonEmptyTrimmedString,
 });
 
 export const updateUserHandlers = appFactory.createHandlers(
