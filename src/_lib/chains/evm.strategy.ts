@@ -21,22 +21,20 @@ export class EVMChainStrategy extends BaseChainStrategy {
       basePath: this.PATH
     });
 
-    // encrypt privateKey with password
-    // hash password
-    // split encrypted privatKey
-    // store shares, hashed password, mnemonic(as plaintext)
     // update isBackedUp
     let encryptedPk: string;
     let hashedPassword: string;
     if (params.password) {
-      encryptedPk = CryptoUtil.encrypt(accounts[0].privateKey, params.password);
+      // encryptedPk = CryptoUtil.encrypt(accounts[0]!.privateKey, params.password);
+      const encryptedMnemonic = CryptoUtil.encrypt(mnemonic, params.password);
+      const walletPK = accounts[0]!.privateKey;
       hashedPassword = CryptoUtil.hash(params.password);
-      const shares = new KeyManager().getShares(Buffer.from(encryptedPk));
+      const shares = new KeyManager().getShares(Buffer.from(walletPK));
       const result = await addWalletToUser({
         userId: params.userId,
-        mnemonic, // enecrypt with password as well
+        mnemonic: encryptedMnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
-        address: accounts[0].address,
+        address: accounts[0]!.address,
         shareA: shares[0],
         shareB: shares[1],
         shareC: shares[2],
@@ -44,25 +42,25 @@ export class EVMChainStrategy extends BaseChainStrategy {
         isBackedUp: true
       });
       return {
-        accountId: result.id,
+        accountId: result!.id,
         mnemonic,
         accounts
       }
     }
     // split unsecure acccount
-    const shares = new KeyManager().getShares(Buffer.from(accounts[0].privateKey));
+    const shares = new KeyManager().getShares(Buffer.from(accounts[0]!.privateKey));
     const result = await addWalletToUser({
       userId: params.userId,
       mnemonic, // enecrypt with password as well
       network: this.networkSlug as any,
-      address: accounts[0].address,
+      address: accounts[0]!.address,
       shareA: shares[0],
       shareB: shares[1],
       shareC: shares[2],
     });
 
     return {
-      accountId: result.id,
+      accountId: result!.id,
       mnemonic,
       accounts
     }
@@ -71,11 +69,14 @@ export class EVMChainStrategy extends BaseChainStrategy {
 
   async recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult & {address: string}> {
     const account = await getWalletWithUser(params.walletId);
+    if(!account) throw new Error('Wallet not found');
+    if(!account.recoveryPassword) {
+      throw new Error('Password has not been set, wallet has not been created');
+    }
     const isValidPassword = CryptoUtil.verify(account.recoveryPassword, params.password);
 
     if(isValidPassword) {
-
-      const encryptedPK = new KeyManager().recoverSecret([params.backupShare, account.shareA])
+      const encryptedPK = new KeyManager().recoverSecret([params.backupShare, account.shareA!])
 
       const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
       return {
