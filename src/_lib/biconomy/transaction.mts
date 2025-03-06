@@ -1,14 +1,12 @@
-import * as BicAbs from "@biconomy/abstractjs";
+import {
+  createSmartAccountClient,
+  createBicoPaymasterClient,
+  toNexusAccount,
+} from "@biconomy/abstractjs";
 import { http, parseEther } from "viem";
 import { Address, privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 
-
-const {
-  createSmartAccountClient,
-  createBicoPaymasterClient,
-  toNexusAccount,
-} = BicAbs
 const bundlerUrl = ``;
 const paymasterUrl = ``;
 
