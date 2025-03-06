@@ -5,6 +5,7 @@ import { WalletContext } from "src/_lib/chains/wallet.context";
 import { validator } from "hono/validator";
 import { getWallet } from "../../db";
 import QRCode from "qrcode";
+import { HTTPException } from "hono/http-exception";
 
 const Body = Schema.Struct({
   password: Schema.NonEmptyTrimmedString,
@@ -16,29 +17,23 @@ const Header = Schema.Struct({
 
 export const createWalletHandler = appFactory.createHandlers(
   effectValidator('json', Body),
-  validator('header', (value, c) => {
-    const userId = value['x-user-id'];
-
-    return {
-      userId,
-    }
-  }),
   async (c) => {
-    const body = c.req.valid('json');
-    const header = c.req.valid('header');
-    console.log(header, ':::header', body, ':::body');
+    const user = c.get('user');
+    if(!user) throw new HTTPException(404, {message: 'User not found'});
 
+    const body = c.req.valid('json');
     // steps - create wallet
     // > convert localKey to string
     // > convert shareC to QRCode encoded URL
     const walletContext = new WalletContext('evm');
     const createResult = await walletContext.createAccount({
       password: body.password,
-      userId: header.userId,
+      userId: user?.id,
       mnemonic: body.mnemonic
     });
 
-    const account = await getWallet(createResult.accountId);
+    const wallet = await getWallet(createResult.accountId);
+    if(!wallet) throw new HTTPException(404, {message: 'Wallet not found or has not been created yet!'});
     const generateQR = async (value: string) => {
       try {
         QRCode.toString(value, {type: 'terminal'}, (err, url) => {
@@ -53,17 +48,18 @@ export const createWalletHandler = appFactory.createHandlers(
       }
     }
 
-    const qrCode = await generateQR(account.shareC.toString('base64'));
+    // generate code if shareC exists
+    const qrCode = wallet.shareC && await generateQR(wallet.shareC.toString('base64'));
 
     return c.json({
       status: 'success',
       message: 'Wallet created successfuly',
       data: {
         accountId: createResult.accountId,
-        address: account.address,
-        localKey: account.shareB.toString('base64'),
+        address: wallet.address,
+        localKey: wallet.shareB && wallet.shareB.toString('base64'),
         qrCode,
-        qnum: account.shareC.toString('base64')
+        // qnum: wallet.shareC.toString('base64')
       }
     }, 201);
   }
