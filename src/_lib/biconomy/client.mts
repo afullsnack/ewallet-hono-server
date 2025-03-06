@@ -7,14 +7,16 @@ import {
   createSmartAccountClient,
   // mcUSDC,
   // toMultichainNexusAccount,
-  toNexusAccount
+  toNexusAccount,
+  createBicoPaymasterClient,
 } from "@biconomy/abstractjs";
 
 
-const newPrivateKey = `0x432afee423c3f7b52569b3f73e656d6700acaf66594f0935a2e0829ceac1434f`;
-// const bundlerUrl = "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
-const newBundlerUrl = "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44"
+const paymasterUrl = (chainId: number = 84532) =>  `https://paymaster.biconomy.io/api/v1/${chainId}/0SDld9I3l.a51bbf9c-0700-4385-b434-f4ca64a289fa`;
+const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api/v3/${chainId}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
 
+
+// return biconomy nexus client with or without paymaster
 export const getNexusClient = async (privateKey: Hex, chainId: number) => {
     const account = privateKeyToAccount(privateKey)
     const nexusClient = createSmartAccountClient({
@@ -23,14 +25,17 @@ export const getNexusClient = async (privateKey: Hex, chainId: number) => {
             chain: extractChain({chains: Object.values(chains) as chains.Chain[], id: chainId}),
             transport: http(),
         }),
-        transport: http(newBundlerUrl),
+        transport: http(bundlerUrl(chainId)),
     });
 
     const address = nexusClient.account?.address!;
     console.log("smart accounts address", address)
     return nexusClient;
     // try {
-    //     const hash = await nexusClient.sendTransaction({ calls: [{to : '0xf5715961C550FC497832063a98eA34673ad7C816', value: 0n}] });
+    //     const hash = await nexusClient.sendTransaction({
+    //         calls: [{to : '0xf5715961C550FC497832063a98eA34673ad7C816', value: 0n}],
+    //         paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
+    //     });
     //     console.log("Transaction hash: ", hash);
     //     const receipt = await nexusClient.waitForTransactionReceipt({ hash });
     //     console.log("Transaction receipt: ", receipt);
