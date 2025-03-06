@@ -78,7 +78,7 @@ export async function getUserWithWallets(userId: string) {
   const result = await db.query.user.findFirst({
     where: eq(user.id, userId),
     with: {
-      accounts: true, // Populate all wallets
+      wallets: true, // Populate all wallets
     },
   });
 
@@ -114,7 +114,7 @@ export async function getWallet(accountId: string) {
 export async function listUsersWithWallets() {
   const results = await db.query.user.findMany({
     with: {
-      accounts: true,
+      wallets: true,
     },
   });
 
