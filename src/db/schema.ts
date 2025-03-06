@@ -103,7 +103,7 @@ export const verification = pgTable("verification", {
 
 // -------------- RELATIONSHIPS ----------------
 export const userRelations = relations(user, ({ many }) => ({
-  accounts: many(wallet),
+  wallets: many(wallet),
 }));
 
 export const walletRelation = relations(wallet, ({ one }) => ({
