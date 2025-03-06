@@ -12,14 +12,14 @@
   "type": "module",
   "dependencies": {
     "@better-auth/expo": "^1.2.2",
-    "@biconomy/abstractjs": "^0.1.0",
+    "@biconomy/abstractjs": "0.1.0",
     "@biconomy/sdk": "^0.0.11",
     "@effect/platform": "^0.64.0",
     "@effect/schema": "0.75.5",
     "@hono/effect-validator": "1.1.0",
     "@hono/node-server": "^1.13.1",
     "@libsql/client": "^0.14.0",
-    "@rhinestone/module-sdk": "^0.2.3",
+    "@rhinestone/module-sdk": "0.2.3",
     "better-auth": "^1.2.2",
     "bip32": "5.0.0-rc.0",
     "bip39": "^3.1.0",
@@ -41,7 +41,7 @@
     "shamirs-secret-sharing-ts": "^1.0.2",
     "tiny-secp256k1": "^2.2.3",
     "uuid": "^11.0.3",
-    "viem": "^2.21.53",
+    "viem": "^2.23.5",
     "whatwg-encoding": "^3.1.1"
   },
   "devDependencies": {
