@@ -2,7 +2,6 @@ import appFactory from "../../app";
 import { effectValidator } from "@hono/effect-validator";
 import { Schema } from "@effect/schema";
 import { WalletContext } from "src/_lib/chains/wallet.context";
-import { validator } from "hono/validator";
 import { getWallet } from "../../db";
 import QRCode from "qrcode";
 import { HTTPException } from "hono/http-exception";
@@ -10,9 +9,6 @@ import { HTTPException } from "hono/http-exception";
 const Body = Schema.Struct({
   password: Schema.NonEmptyTrimmedString,
   mnemonic: Schema.optional(Schema.NonEmptyTrimmedString),
-});
-const Header = Schema.Struct({
-  userId: Schema.NonEmptyTrimmedString,
 });
 
 export const createWalletHandler = appFactory.createHandlers(
@@ -59,7 +55,6 @@ export const createWalletHandler = appFactory.createHandlers(
         address: wallet.address,
         localKey: wallet.shareB && wallet.shareB.toString('base64'),
         qrCode,
-        // qnum: wallet.shareC.toString('base64')
       }
     }, 201);
   }
