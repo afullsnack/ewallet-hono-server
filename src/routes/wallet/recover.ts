@@ -11,10 +11,6 @@ const Body = Schema.Struct({
   password: Schema.NonEmptyTrimmedString,
   qrCodeBase64Url: Schema.NonEmptyTrimmedString,
   walletId: Schema.NonEmptyTrimmedString,
-  qnum: Schema.String,
-});
-const Header = Schema.Struct({
-  userId: Schema.NonEmptyTrimmedString,
 });
 
 export const recoverWalletHandler = appFactory.createHandlers(

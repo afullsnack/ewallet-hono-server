@@ -1,4 +1,3 @@
-
 import { HTTPException } from "hono/http-exception";
 import appFactory from "../../app";
 import { createWalletHandler } from "./create";
