@@ -52,7 +52,7 @@ const backupWallet = appFactory.createHandlers(async (c) => {
 
 walletRoute.get('/', ...getWallet);
 walletRoute.post('/create', ...createWalletHandler);
-walletRoute.post('/backup', ...backupWallet);
+walletRoute.put('/backup', ...backupWallet);
 walletRoute.post('/recover', ...recoverWalletHandler);
 
 export { walletRoute };
