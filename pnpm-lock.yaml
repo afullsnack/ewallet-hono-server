@@ -77,6 +77,9 @@ importers:
       jimp:
         specifier: ^1.6.0
         version: 1.6.0
+      jsqr-es6:
+        specifier: 1.4.0-1
+        version: 1.4.0-1
       pg:
         specifier: ^8.13.3
         version: 8.13.3
@@ -1649,6 +1652,9 @@ packages:
 
   js-base64@3.7.7:
     resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
+
+  jsqr-es6@1.4.0-1:
+    resolution: {integrity: sha512-LPWZJLI+3LLOy9k3/s/MeXlkfNOs3bYBX5O+fp4N0XuxbgO8H7Uc/nYZeNwo13nSZXRW9xWFKmZdy9591+PyAg==}
 
   jsqr@1.4.0:
     resolution: {integrity: sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==}
@@ -3699,6 +3705,8 @@ snapshots:
   jpeg-js@0.4.4: {}
 
   js-base64@3.7.7: {}
+
+  jsqr-es6@1.4.0-1: {}
 
   jsqr@1.4.0: {}
 
