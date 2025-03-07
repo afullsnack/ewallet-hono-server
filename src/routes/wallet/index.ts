@@ -25,7 +25,9 @@ const getWallet = appFactory.createHandlers(async (c) => {
 
   const wallets = await Promise.all(
     user.wallets.map(async (w) => {
-      const qrCode = await generateQR(w.shareC!.toString('base64'));
+      const {data: qrCode, error} = await tryCatch(generateQR(w.shareC!.toString('base64')));
+      if(error) throw new HTTPException(500, {message: error.message});
+      
       return {
         qrCode,
         localKey: w.shareB && w.shareB.toString('base64'),
