@@ -2,13 +2,12 @@ import appFactory from "../../app";
 import { effectValidator } from "@hono/effect-validator";
 import { Schema } from "@effect/schema";
 import { WalletContext } from "src/_lib/chains/wallet.context";
-import { getWallet } from "../../db";
-import QRCode from "qrcode";
 import { HTTPException } from "hono/http-exception";
 
 const Body = Schema.Struct({
   password: Schema.NonEmptyTrimmedString,
   mnemonic: Schema.optional(Schema.NonEmptyTrimmedString),
+  network: Schema.optional(Schema.Union(Schema.Literal('evm'), Schema.Literal('btc')))
 });
 
 export const createWalletHandler = appFactory.createHandlers(
@@ -28,33 +27,15 @@ export const createWalletHandler = appFactory.createHandlers(
       mnemonic: body.mnemonic
     });
 
-    const wallet = await getWallet(createResult.accountId);
-    if(!wallet) throw new HTTPException(404, {message: 'Wallet not found or has not been created yet!'});
-    const generateQR = async (value: string) => {
-      try {
-        QRCode.toString(value, {type: 'terminal'}, (err, url) => {
-          console.error(err, ":::Error");
-          console.log(url);
-        })
-        return await QRCode.toDataURL(value);
-      }
-      catch(error: any) {
-        console.error(error, {action: 'generate-qrcode'});
-        throw new Error('Failed to generate QR Code');
-      }
-    }
-
-    // generate code if shareC exists
-    const qrCode = wallet.shareC && await generateQR(wallet.shareC.toString('base64'));
+    // const wallet = await getWallet(createResult.accountId);
+    // if(!wallet) throw new HTTPException(404, {message: 'Wallet not found or has not been created yet!'});
 
     return c.json({
       status: 'success',
       message: 'Wallet created successfuly',
       data: {
         accountId: createResult.accountId,
-        address: wallet.address,
-        localKey: wallet.shareB && wallet.shareB.toString('base64'),
-        qrCode,
+        address: createResult.accounts[0]?.address,
       }
     }, 201);
   }

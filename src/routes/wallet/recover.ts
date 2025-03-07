@@ -62,7 +62,7 @@ export const recoverWalletHandler = appFactory.createHandlers(
       status: 'success',
       message: 'Recovered wallet',
       data: {
-        ...accounts
+        // ...accounts
       }
     })
   }
