@@ -25,6 +25,14 @@ const getWallet = appFactory.createHandlers(async (c) => {
 
   const wallets = await Promise.all(
     user.wallets.map(async (w) => {
+      // if its already backedup means shares B and C have been removed
+      if(w.isBackedUp) {
+        return {
+          address: w.address,
+          network: w.network,
+        }
+      }
+
       const {data: qrCode, error} = await tryCatch(generateQR(w.shareC!.toString('base64')));
       if(error) throw new HTTPException(500, {message: error.message});
       
@@ -43,12 +51,16 @@ const backupWallet = appFactory.createHandlers(async (c) => {
   const userId = c.get('user')?.id;
   if (!userId) throw new HTTPException(404, { message: 'User not found' });
 
-  const { error } = await tryCatch(db.update(wallet).set({ isBackedUp: true }));
+  const { error } = await tryCatch(db.update(wallet).set({
+    isBackedUp: true,
+    shareC: undefined,
+    shareB: undefined
+  }));
   if (error) throw new HTTPException(500, { message: 'Something went wrong backing up wallet' });
 
   return c.json({
     success: true,
-    message: 'wallet backed up'
+    message: 'Wallet backed up'
   })
 })
 
