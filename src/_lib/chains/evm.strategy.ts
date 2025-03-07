@@ -6,6 +6,7 @@ import { KeyManager } from "../key-manager/key-manager.service";
 import { addWalletToUser, getWalletWithUser } from "../../db";
 import { privateKeyToAddress } from "viem/accounts";
 import { Hex } from "viem";
+import {getNexusClient} from "../biconomy/client.mts";
 
 export class EVMChainStrategy extends BaseChainStrategy {
 
@@ -20,6 +21,10 @@ export class EVMChainStrategy extends BaseChainStrategy {
       startIndex: 0,
       basePath: this.PATH
     });
+    const walletPK = accounts[0]!.privateKey;
+
+    const nClient = await getNexusClient(walletPK);
+    const smartAddress = nClient.account.address;
 
     // update isBackedUp
     let encryptedPk: string;
@@ -27,14 +32,13 @@ export class EVMChainStrategy extends BaseChainStrategy {
     if (params.password) {
       // encryptedPk = CryptoUtil.encrypt(accounts[0]!.privateKey, params.password);
       const encryptedMnemonic = CryptoUtil.encrypt(mnemonic, params.password);
-      const walletPK = accounts[0]!.privateKey;
       hashedPassword = CryptoUtil.hash(params.password);
       const shares = new KeyManager().getShares(Buffer.from(walletPK));
       const result = await addWalletToUser({
         userId: params.userId,
         mnemonic: encryptedMnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
-        address: accounts[0]!.address,
+        address: smartAddress,
         shareA: shares[0],
         shareB: shares[1],
         shareC: shares[2],
@@ -53,7 +57,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
       userId: params.userId,
       mnemonic, // enecrypt with password as well
       network: this.networkSlug as any,
-      address: accounts[0]!.address,
+      address: smartAddress,
       shareA: shares[0],
       shareB: shares[1],
       shareC: shares[2],

@@ -17,7 +17,7 @@ const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api
 
 
 // return biconomy nexus client with or without paymaster
-export const getNexusClient = async (privateKey: Hex, chainId: number, withPM: boolean = false) => {
+export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, withPM: boolean = false) => {
     const account = privateKeyToAccount(privateKey)
     const nexusClient = createSmartAccountClient({
         account: await toNexusAccount({
