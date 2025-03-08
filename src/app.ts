@@ -14,12 +14,14 @@ import { Context } from "hono";
 
 export type Env = {
   Bindings: {
-    DB_FILE_NAME: string;
+    POSTGRES_DB_URL: string;
+    REDIS_CONNECTION_URL: string;
+    BETTER_AUTH_SECRET: string;
+    BETTER_AUTH_URL: string;
     KEY_SHARES: number;
     KEY_THRESHOLD: number;
-    LOGTO_APP_ID: string;
-    LOGTO_APP_SECRET: string;
-    LOGTO_APP_ENDPOINT: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
   },
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
@@ -39,7 +41,7 @@ const app = createFactory<Env>({
   initApp(app) {
     app.use(async (c, next) => {
       const envs = env<{
-        DB_FILE_NAME: string;
+        POSTGRES_DB_URL: string;
         KEY_SHARES: string;
         KEY_THRESHOLD: string;
       }, Context<Env>>(c, 'node');
