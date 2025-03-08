@@ -6,7 +6,6 @@ FROM --platform=linux/amd64 node:20-slim AS base
 WORKDIR /app
 # Copy artifacts over
 COPY pnpm-lock.yaml package.json ./
-COPY .npmrc ./
 
 # Install pnpm
 RUN npm install -g pnpm
