@@ -47,7 +47,6 @@ const app = createFactory<Env>({
         KEY_SHARES: string;
         KEY_THRESHOLD: string;
       }, Context<Env>>(c, 'node');
-      console.log(envs);
       c.env = {
         ...envs,
         KEY_SHARES: Number(envs.KEY_SHARES),
