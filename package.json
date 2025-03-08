@@ -4,7 +4,7 @@
     "dev": "pnpm with-env tsx watch src/index.ts | pino-pretty --colorize -l",
     "build": "tsup src/index.ts --format cjs,esm",
     "start": "pnpm with-env node dist/index.js",
-    "db:push": "npx drizzle-kit push",
+    "db:push": "pnpm with-env npx drizzle-kit push",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:studio": "npx drizzle-kit studio --verbose",
