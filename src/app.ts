@@ -11,6 +11,7 @@ import {
 import {auth} from "./_lib/shared/auth"
 import { env } from "hono/adapter";
 import { Context } from "hono";
+import { logger } from "./middlewares/logger";
 
 export type Env = {
   Bindings: {
@@ -40,6 +41,7 @@ const app = createFactory<Env>({
   // NOTE: update to use user service, cache config
   initApp(app) {
     app.use(async (c, next) => {
+      try {
       const envs = env<{
         POSTGRES_DB_URL: string;
         KEY_SHARES: string;
@@ -59,6 +61,10 @@ const app = createFactory<Env>({
       });
 
       await next();
+        
+      } catch(error:any) {
+        logger.fatal(error);
+      }
     })
   },
 })
