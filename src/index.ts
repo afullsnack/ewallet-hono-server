@@ -27,17 +27,17 @@ process.on('SIGINT', () => {
     }
   });
 });
-// process.on('uncaughtException', (err) => {
-//   // log the exception
-//   logger.fatal(err, 'uncaught exception detected');
-//   // shutdown the server gracefully
-//   server.close((err) => {
-//     logger.error(err, 'Error closing server');
-//     // If a graceful shutdown is not achieved after 1 second,
-//     // shut down the process completely
-//     setTimeout(() => {
-//       process.abort(); // exit immediately and generate a core dump file
-//     }, 1000).unref()
-//     process.exit(1); // then exit
-//   });
-// });
+process.on('uncaughtException', (err) => {
+  // log the exception
+  logger.fatal(err, 'uncaught exception detected');
+  // shutdown the server gracefully
+  server.close((err) => {
+    logger.error(err, 'Error closing server');
+    // If a graceful shutdown is not achieved after 1 second,
+    // shut down the process completely
+    setTimeout(() => {
+      process.abort(); // exit immediately and generate a core dump file
+    }, 1000).unref()
+    process.exit(1); // then exit
+  });
+});
