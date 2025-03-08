@@ -7,6 +7,7 @@ import { tryCatch } from "src/_lib/try-catch";
 
 const Body = Schema.Struct({
   username: Schema.String,
+  isFullyOnboarded: Schema.Boolean
 });
 
 export const updateUserHandlers = appFactory.createHandlers(
