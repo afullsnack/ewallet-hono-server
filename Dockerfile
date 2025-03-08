@@ -25,6 +25,7 @@ RUN pnpm i
 # Bundle app source
 COPY . .
 
+ARG POSTGRES_DB_URL
 # Generate and push prisma file
 RUN pnpm run db:generate
 RUN pnpm run db:push
