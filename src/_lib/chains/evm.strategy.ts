@@ -43,12 +43,10 @@ export class EVMChainStrategy extends BaseChainStrategy {
         shareB: shares[1],
         shareC: shares[2],
         recoveryPassword: hashedPassword,
-        isBackedUp: true
       });
       return {
         accountId: result!.id,
-        mnemonic,
-        accounts
+        address: smartAddress
       }
     }
     // split unsecure acccount
@@ -65,8 +63,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
 
     return {
       accountId: result!.id,
-      mnemonic,
-      accounts
+      address: smartAddress
     }
   }
 

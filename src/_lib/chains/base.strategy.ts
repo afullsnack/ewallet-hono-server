@@ -5,7 +5,7 @@ export interface AccountCreationInput {
   mnemonic?: string;
   password?: string; // change to required
 }
-export interface AccountCreationResult {mnemonic: string; accounts: HDAccount[]};
+export interface AccountCreationResult {address: string};
 export interface AccountRecoveryResult {
   encryptedPrivateKey: string;
   privateKey: string;
