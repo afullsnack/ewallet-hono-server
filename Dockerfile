@@ -34,7 +34,7 @@ RUN pnpm run db:push
 RUN pnpm run build
 
 # Expose the app
-EXPOSE 8080
+EXPOSE 9001
 
 # Start the application
 CMD ["pnpm", "start"]
