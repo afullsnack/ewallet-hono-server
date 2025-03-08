@@ -6,8 +6,12 @@ import { HTTPException } from "hono/http-exception";
 
 const Body = Schema.Struct({
   password: Schema.NonEmptyTrimmedString,
-  mnemonic: Schema.optional(Schema.NonEmptyTrimmedString),
-  network: Schema.optional(Schema.Union(Schema.Literal('evm'), Schema.Literal('btc')))
+  // mnemonic: Schema.optional(Schema.NonEmptyTrimmedString),
+  // network: Schema.optional(Schema.Union(
+  //   Schema.Literal('evm'),
+  //   Schema.Literal('btc'),
+  //   Schema.Literal('solana')
+  // ))
 });
 
 export const createWalletHandler = appFactory.createHandlers(
@@ -18,13 +22,11 @@ export const createWalletHandler = appFactory.createHandlers(
 
     const body = c.req.valid('json');
     // steps - create wallet
-    // > convert localKey to string
-    // > convert shareC to QRCode encoded URL
     const walletContext = new WalletContext('evm');
     const createResult = await walletContext.createAccount({
       password: body.password,
       userId: user?.id,
-      mnemonic: body.mnemonic
+      // mnemonic: body.mnemonic
     });
 
     // const wallet = await getWallet(createResult.accountId);
@@ -35,7 +37,7 @@ export const createWalletHandler = appFactory.createHandlers(
       message: 'Wallet created successfuly',
       data: {
         accountId: createResult.accountId,
-        address: createResult.accounts[0]?.address,
+        address: createResult.address,
       }
     }, 201);
   }

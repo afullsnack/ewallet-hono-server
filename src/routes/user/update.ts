@@ -3,9 +3,11 @@ import appFactory from "../../app";
 import { Schema } from "@effect/schema";
 import { updateUser } from "src/db";
 import { HTTPException } from "hono/http-exception";
+import { tryCatch } from "src/_lib/try-catch";
 
-const Body = Schema.Struct({
-  username: Schema.NonEmptyTrimmedString,
+const Body = Schema.Record({
+  key: Schema.String,
+  value: Schema.Any
 });
 
 export const updateUserHandlers = appFactory.createHandlers(
@@ -27,9 +29,11 @@ export const updateUserHandlers = appFactory.createHandlers(
       }
     );
 
-    await updateUser(user.id, {
-      username: body.username,
-    })
+    const { error } = await tryCatch(updateUser(user.id, {
+      ...body
+    }));
+
+    if (error) throw new HTTPException(500, { message: 'Failed to update user' });
 
     return c.json({
       'success': true,
