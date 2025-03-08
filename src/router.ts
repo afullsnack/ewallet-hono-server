@@ -48,17 +48,17 @@ export function setupRouter(app: Hono<Env>) {
   v1App.route("/guardian", guardianRoute);
   v1App.route("/wallet", walletRoute);
   v1App.route("/user", userRoute);
+  v1App.get("/health", healthCheck);
 
   app.on(["POST", "GET"], '/api/*', (c) => {
     return auth.handler(c.req.raw);
   });
 
   // Handlers
-  v1App.get("/health", healthCheck);
   v1App.notFound((c) => {
     return c.text(`Could not find the route, ${c.req.url}`);
   });
-  v1App.onError((err, c) => {
+  app.onError((err, c) => {
     console.error(err);
     return c.json(
       {
@@ -69,7 +69,7 @@ export function setupRouter(app: Hono<Env>) {
       500
     );
   });
-  showRoutes(v1App, {
+  showRoutes(app, {
     verbose: true,
     colorize: true,
   });
