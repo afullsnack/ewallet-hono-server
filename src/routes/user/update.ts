@@ -5,9 +5,8 @@ import { updateUser } from "src/db";
 import { HTTPException } from "hono/http-exception";
 import { tryCatch } from "src/_lib/try-catch";
 
-const Body = Schema.Record({
-  key: Schema.String,
-  value: Schema.Any
+const Body = Schema.Struct({
+  username: Schema.String,
 });
 
 export const updateUserHandlers = appFactory.createHandlers(
