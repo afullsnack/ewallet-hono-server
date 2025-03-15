@@ -1,11 +1,11 @@
 import { HTTPException } from "hono/http-exception";
 import appFactory from "../../app";
 import { createWalletHandler } from "./create";
-import { recoverWalletHandler } from "./recover";
+import { recoveryRoute } from "./recover";
 import { db, getUserWithWallets } from "../../db";
 import { generateQR } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
-import { tryCatch } from "src/_lib/try-catch";
+import { tryCatch } from "../../_lib/try-catch";
 
 const walletRoute = appFactory.createApp();
 
@@ -67,6 +67,6 @@ const backupWallet = appFactory.createHandlers(async (c) => {
 walletRoute.get('/', ...getWallet);
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
-walletRoute.post('/recover', ...recoverWalletHandler);
+walletRoute.route('/recover', recoveryRoute);
 
 export { walletRoute };

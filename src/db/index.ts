@@ -7,7 +7,7 @@ const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
-const { user, wallet } = schema;
+const { user, wallet, recoveryRequestTable } = schema;
 type UserInsert = typeof user.$inferInsert;
 type UserUpdate = typeof user.$inferSelect;
 type AccountInsert = typeof wallet.$inferInsert;
@@ -85,6 +85,13 @@ export async function getUserWithWallets(userId: string) {
   return result;
 }
 
+export async function getUserWithEmail(email: string) {
+  const result = await db.query.user.findFirst({
+    where: eq(user.email, email),
+  })
+  return result;
+}
+
 // Get Wallet with Associated User
 export async function getWalletWithUser(accountId: string) {
   const result = await db.query.wallet.findFirst({
@@ -148,4 +155,19 @@ export async function addWalletToUser(
   }).returning({address: wallet.address, id: wallet.id});
 
   return newWallet;
+}
+
+// create recovery request
+export async function createRecoveryRequest(requestorId: string) {
+  const [newRequest] = await db.insert(recoveryRequestTable)
+    .values({
+      requestorId,
+      expiresIn: new Date(Date.now() * 24 * 60 * 60).toDateString()
+    })
+    .returning({
+      requestorId: recoveryRequestTable.requestorId,
+      id: recoveryRequestTable.id,
+      expiresIn: recoveryRequestTable.expiresIn
+    })
+    return newRequest;
 }
