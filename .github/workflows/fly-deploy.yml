@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - run: flyctl deploy --build-arg POSTGRES_DB_URL=$POSTGRES_DB_URL --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           POSTGRES_DB_URL: ${{ secrets.POSTGRES_DB_URL }}
