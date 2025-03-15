@@ -9,6 +9,7 @@ services:
     container_name: ewallet-postgres
     hostname: postgres
     environment:
+      POSTGRES_DB_URL: ${POSTGRES_DB_URL}
       POSTGRES_USER: ${DEV_POSTGRES_USER}
       POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD}
       POSTGRES_DB: ${DEV_POSTGRES_DB}
