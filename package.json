@@ -20,6 +20,7 @@
     "@effect/schema": "0.75.5",
     "@hono/effect-validator": "1.1.0",
     "@hono/node-server": "^1.13.1",
+    "@hono/zod-validator": "^0.4.3",
     "@libsql/client": "^0.14.0",
     "@rhinestone/module-sdk": "0.2.3",
     "better-auth": "^1.2.2",
@@ -45,9 +46,11 @@
     "tiny-secp256k1": "^2.2.3",
     "uuid": "^11.0.3",
     "viem": "^2.23.5",
-    "whatwg-encoding": "^3.1.1"
+    "whatwg-encoding": "^3.1.1",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.8",
     "@types/bitcore-lib": "^0.15.6",
     "@types/data-urls": "^3.0.4",
     "@types/pg": "^8.11.11",
