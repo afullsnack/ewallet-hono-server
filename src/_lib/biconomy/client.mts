@@ -13,7 +13,7 @@ import {
 } from "@biconomy/abstractjs";
 
 
-const paymasterUrl = (chainId: number = 84532) =>  `https://paymaster.biconomy.io/api/v1/${chainId}/0SDld9I3l.a51bbf9c-0700-4385-b434-f4ca64a289fa`;
+const paymasterUrl = (chainId: number = 84532) =>  `https://paymaster.biconomy.io/api/v2/${chainId}/HJ4A-yoIU.590fc68b-f046-42db-b7b5-9279e73849d4`;
 const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api/v3/${chainId}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
 
 
@@ -35,37 +35,38 @@ export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, w
     return nexusClient;
 }
 
-export const getTransactionEstimate = async (nexusClient: NexusClient, chainId: number = 84532, receiver: Address, amount: bigint) => {
+export const getTransactionEstimate = async (nexusClient: NexusClient, receiver: Address, amount: bigint) => {
     try {
-        const info = await nexusClient.estimateUserOperationGas({
+        const prep = await nexusClient.prepareUserOperation({
             calls: [{to : receiver, value: amount}],
-            paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
-        });
-        console.log("Transaction info: ", info);
-        // const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-        // console.log("Transaction receipt: ", receipt);
-        return {receiver , info};
+            // paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
+        })
+        console.log(prep, ":::prepped transaction")
+        // const info = await nexusClient.estimateUserOperationGas({
+        //     calls: [{to: receiver, value: amount}],
+        // });
+        return {receiver , info: prep};
     }
     catch (error) {
-        console.log(error, ":::error minx");
-        return {receiver}
+        console.log(error, ":::error getting estimate");
+        throw error;
     }
 }
 
-export const sendTransaction = async (nexusClient: NexusClient, chainId: number = 84532, receiver: Address, amount: bigint) => {
+export const sendTransaction = async (nexusClient: NexusClient, receiver: Address, amount: bigint) => {
     try {
         const hash = await nexusClient.sendTransaction({
-            calls: [{to : receiver, value: amount}],
-            paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
+            calls: [{to: receiver, value: amount}],
+            // paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
         });
         console.log("Transaction hash: ", hash);
         const receipt = await nexusClient.waitForTransactionReceipt({ hash });
         console.log("Transaction receipt: ", receipt);
-        return {receiver , hash};
+        return {receiver , hash, receipt};
     }
     catch (error) {
         console.log(error, ":::error minx");
-        return {receiver}
+        throw error;
     }
 }
 
