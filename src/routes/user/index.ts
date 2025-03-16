@@ -5,6 +5,7 @@ import { updateUserHandlers } from "./update";
 import { getUserWithWallets } from "../../db";
 import { getBalance } from "src/_lib/biconomy/client.mts";
 import { Address } from "viem";
+import { tryCatch } from "src/_lib/try-catch";
 
 const userRoute = appFactory.createApp();
 
@@ -26,7 +27,8 @@ const getUserHandlers = appFactory.createHandlers(async (c) => {
   const user = await getUserWithWallets(session.userId)
   if(!user) throw new HTTPException(404, {message: 'User was not found in db'});
 
-  const balance = await getBalance(84532, user?.wallets[0]?.address! as Address)
+  const {data: balance, error} = await tryCatch(getBalance(84532, user?.wallets[0]?.address! as Address))
+  logger.error(error)
   logger.info("balance:::", balance)
 
   return c.json({user, balance}, 200);
