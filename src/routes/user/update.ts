@@ -1,9 +1,9 @@
 import { effectValidator } from "@hono/effect-validator";
 import appFactory from "../../app";
 import { Schema } from "@effect/schema";
-import { updateUser } from "src/db";
+import { updateUser } from "../../db";
 import { HTTPException } from "hono/http-exception";
-import { tryCatch } from "src/_lib/try-catch";
+import { tryCatch } from "../../_lib/try-catch";
 
 const Body = Schema.Struct({
   username: Schema.String,

@@ -85,9 +85,9 @@ export async function getUserWithWallets(userId: string) {
   return result;
 }
 
-export async function getUserWithEmail(email: string) {
+export async function getUserWithEmailOrUsername(emailOrUsername: string) {
   const result = await db.query.user.findFirst({
-    where: eq(user.email, email),
+    where: ((user, {eq, or}) =>  or(eq(user.email, emailOrUsername), eq(user.username, emailOrUsername))),
   })
   return result;
 }
@@ -162,7 +162,7 @@ export async function createRecoveryRequest(requestorId: string) {
   const [newRequest] = await db.insert(recoveryRequestTable)
     .values({
       requestorId,
-      expiresIn: new Date(Date.now() * 24 * 60 * 60).toDateString()
+      expiresIn: new Date(Date.now()+3600000)
     })
     .returning({
       requestorId: recoveryRequestTable.requestorId,

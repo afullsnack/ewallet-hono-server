@@ -40,9 +40,9 @@ export const wallet = pgTable('wallets', {
   network: text('network_type', { enum: supportedNetworks }).notNull(),
   address: text(),
   mnemonic: text().notNull(),
-  shareA: bytea('share_a'), // our db only stores share_a
-  shareB: bytea('share_b'), // sits on users device
-  shareC: bytea('share_c'), // backup - QR Code or Guardian
+  shareA: text('share_a'), // our db only stores share_a
+  shareB: text('share_b'), // sits on users device
+  shareC: text('share_c'), // backup - QR Code or Guardian
   isBackedUp: boolean().default(false),
   // reference user as guardian, and set delete action to null when user is deleted
   guardianId: text('guardian_id').references(() => user.id, { onDelete: 'set null' }),
@@ -60,9 +60,10 @@ export const guardRequestTable = pgTable('guard_request', {
 
 export const recoveryRequestTable = pgTable('recovery_request', {
   id: tableId(),
-  expiresIn: timestamp('expires_in', { mode: 'string', withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { mode: 'string', withTimezone: false }).defaultNow().notNull(),
+  expiresIn: timestamp('expires_in', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: false }).defaultNow().notNull(),
   requestorId: text('requestor_id').references(() => user.id, { onDelete: 'cascade' }),
+  keyData: text()
 });
 
 export const session = pgTable("session", {

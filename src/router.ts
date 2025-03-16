@@ -58,17 +58,17 @@ export function setupRouter(app: Hono<Env>) {
   v1App.notFound((c) => {
     return c.text(`Could not find the route, ${c.req.url}`);
   });
-  app.onError((err, c) => {
-    console.error(err);
-    return c.json(
-      {
-        status: "failed",
-        message: "Internal server error",
-        error: JSON.stringify(err, null, 4)
-      },
-      500
-    );
-  });
+  // app.onError((err, c) => {
+  //   console.error(err, 'On error');
+  //   return c.json(
+  //     {
+  //       status: "failed",
+  //       message: "Internal server error",
+  //       error: JSON.stringify(err, null, 4)
+  //     },
+  //     err.cause
+  //   );
+  // });
   showRoutes(app, {
     verbose: true,
     colorize: true,

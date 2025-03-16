@@ -8,6 +8,7 @@ import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 
 const walletRoute = appFactory.createApp();
+walletRoute.route('/recover', recoveryRoute);
 
 walletRoute.use(async (c, next) => {
   const session = c.get('session');
@@ -33,12 +34,16 @@ const getWallet = appFactory.createHandlers(async (c) => {
         }
       }
 
-      const {data: qrCode, error} = await tryCatch(generateQR(w.shareC!.toString('base64')));
+      const qrBase64 = w.shareC!;
+      const localKey = w.shareB!;
+      console.log(qrBase64, ":::utf16le qr")
+      console.log(localKey, ":::localkey utf16le")
+      const {data: qrCode, error} = await tryCatch(generateQR(qrBase64));
       if(error) throw new HTTPException(500, {message: error.message});
       
       return {
         qrCode,
-        localKey: w.shareB && w.shareB.toString('base64'),
+        localKey,
         address: w.address,
         network: w.network
       }
@@ -51,10 +56,10 @@ const backupWallet = appFactory.createHandlers(async (c) => {
   const userId = c.get('user')?.id;
   if (!userId) throw new HTTPException(404, { message: 'User not found' });
 
-  const { error } = await tryCatch(db.update(wallet).set({
+  const { error, data } = await tryCatch(db.update(wallet).set({
     isBackedUp: true,
-    shareC: undefined,
-    shareB: undefined
+    // shareC: null,
+    // shareB: null
   }));
   if (error) throw new HTTPException(500, { message: 'Something went wrong backing up wallet' });
 
@@ -67,6 +72,5 @@ const backupWallet = appFactory.createHandlers(async (c) => {
 walletRoute.get('/', ...getWallet);
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
-walletRoute.route('/recover', recoveryRoute);
 
 export { walletRoute };

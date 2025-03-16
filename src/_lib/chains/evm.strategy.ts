@@ -5,7 +5,7 @@ import { CryptoUtil } from "../helpers/hasher";
 import { KeyManager } from "../key-manager/key-manager.service";
 import { addWalletToUser, getWalletWithUser } from "../../db";
 import { privateKeyToAddress } from "viem/accounts";
-import { Hex } from "viem";
+import { Address, ChainDoesNotSupportContract, Hex } from "viem";
 import {getNexusClient} from "../biconomy/client.mts";
 
 export class EVMChainStrategy extends BaseChainStrategy {
@@ -22,6 +22,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
       basePath: this.PATH
     });
     const walletPK = accounts[0]!.privateKey;
+    console.log(walletPK, ":::created pk");
 
     const nClient = await getNexusClient(walletPK);
     const smartAddress = nClient.account.address;
@@ -33,15 +34,15 @@ export class EVMChainStrategy extends BaseChainStrategy {
       // encryptedPk = CryptoUtil.encrypt(accounts[0]!.privateKey, params.password);
       const encryptedMnemonic = CryptoUtil.encrypt(mnemonic, params.password);
       hashedPassword = CryptoUtil.hash(params.password);
-      const shares = new KeyManager().getShares(Buffer.from(walletPK));
+      const shares = new KeyManager().getShares(Buffer.from(walletPK, 'utf16le'));
       const result = await addWalletToUser({
         userId: params.userId,
         mnemonic: encryptedMnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
         address: smartAddress,
-        shareA: shares[0],
-        shareB: shares[1],
-        shareC: shares[2],
+        shareA: shares[0]?.toString('utf16le'),
+        shareB: shares[1]?.toString('utf16le'),
+        shareC: shares[2]?.toString('utf16le'),
         recoveryPassword: hashedPassword,
       });
       return {
@@ -56,9 +57,9 @@ export class EVMChainStrategy extends BaseChainStrategy {
       mnemonic, // enecrypt with password as well
       network: this.networkSlug as any,
       address: smartAddress,
-      shareA: shares[0],
-      shareB: shares[1],
-      shareC: shares[2],
+      shareA: shares[0]?.toString('utf16le'),
+      shareB: shares[1]?.toString('utf16le'),
+      shareC: shares[2]?.toString('utf16le'),
     });
 
     return {
@@ -77,13 +78,33 @@ export class EVMChainStrategy extends BaseChainStrategy {
     const isValidPassword = CryptoUtil.verify(account.recoveryPassword, params.password);
 
     if(isValidPassword) {
-      const encryptedPK = new KeyManager().recoverSecret([params.backupShare, account.shareA!])
+      // const shares = [
+      //   Buffer.from(account.shareB!, 'utf16le'),
+      //   Buffer.from(account.shareA!, 'utf16le')
+      // ]
 
-      const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
+      // console.log(account.shareB, ":::share B")
+      // console.log(account.shareA, ":::share A")
+      // shares.forEach((share) => console.log(share, "share in array"))
+      // const recovered = new KeyManager().recoverSecret(shares, 'utf16le')
+      // console.log(recovered, ":::recovered")
+      const { accounts } = await createHDAccounts({
+        mnemonic: params.mnemonic ?? bip39.generateMnemonic(),
+        numberOfAccounts: 1,
+        startIndex: 0,
+        basePath: this.PATH
+      });
+      const walletPK = accounts[0]!.privateKey;
+
+      console.log(walletPK, ":::wallet PK")
+
+      const nClient = await getNexusClient(`${walletPK}`);
+      const smartAddress = nClient.account.address;
+      // const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
       return {
-        encryptedPrivateKey: encryptedPK.toString(),
-        privateKey,
-        address: privateKeyToAddress(privateKey as Hex),
+        encryptedPrivateKey: walletPK,
+        privateKey: walletPK,
+        address: smartAddress,
       }
     }
 

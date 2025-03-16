@@ -9,12 +9,14 @@ export interface AccountCreationResult {address: string};
 export interface AccountRecoveryResult {
   encryptedPrivateKey: string;
   privateKey: string;
+  address: string;
 }
 
 export interface AccountRecoveryInput {
-  backupShare: Buffer;
+  backupShare: string;
   password: string;
   walletId: string;
+  mnemonic: string;
 };
 export interface IBaseChainStrategy {
   createAccount: (params: AccountCreationInput) => Promise<AccountCreationResult & {accountId: string}>;

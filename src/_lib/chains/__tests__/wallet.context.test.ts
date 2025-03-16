@@ -59,15 +59,15 @@ test("should create keys, split to shares and save in db", async () => {
 }, TEST_CONFIG);
 
 
-test("should recover keys with with password and backup db", async () => {
+test.only("should recover keys with with password and backup db", async () => {
   try {
-    const wallet = await getWallet('f006dfbd-fb54-4a19-8cbb-fd9e5611eb15');
-    const password = 'kiloBYTE1234!';
+    const wallet = await getWallet('fa03f085-2253-4bce-bba2-dee23afe8b01');
+    const password = 'password123!!!';
     const walletContext = new WalletContext("evm");
     const recovery = await walletContext.recoverAccount({
       password,
       backupShare: wallet?.shareB!,
-      walletId: 'f006dfbd-fb54-4a19-8cbb-fd9e5611eb15'
+      walletId: wallet?.id!
     });
     console.log(recovery, ":::recovered account");
   }

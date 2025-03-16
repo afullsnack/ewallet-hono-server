@@ -5,7 +5,7 @@ import { split, combine } from "shamirs-secret-sharing-ts";
 import "dotenv/config";
 export interface IKeyManagerService {
   getShares(secret: Buffer): any[];
-  recoverSecret(shares: any[]): Buffer;
+  recoverSecret(shares: any[], encoding: BufferEncoding): string;
 };
 
 export class KeyManager implements IKeyManagerService {
@@ -38,10 +38,11 @@ export class KeyManager implements IKeyManagerService {
     }
   }
 
-  recoverSecret(shares: Buffer[]): Buffer {
+  recoverSecret(shares: Buffer[], encoding: BufferEncoding): string {
     try {
       const recovered = combine(shares);
-      return recovered;
+      console.log(recovered.toString(encoding), ":::privateKey");
+      return recovered.toString(encoding);
     } catch(err) {
       throw new Error('Failed to combine');
     }
