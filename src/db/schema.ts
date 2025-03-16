@@ -9,6 +9,12 @@ const supportedNetworks = [
   'solana',
   'tron',
 ] as const;
+const transactionStatus = [
+  'initiated',
+  'pending',
+  'complete',
+  'failed'
+] as const;
 const guardianRequestStatus = [
   'accepted',
   'canceled',
@@ -56,6 +62,7 @@ export const transaction = pgTable('transaction', {
   chainId: text(),
   amount: text('amount'),
   token: text(),
+  status: text('status', { enum: transactionStatus}).notNull().default('initiated'),
   hash: text(),
   sender: text().references(() => user.id),
   receiver: text(),
