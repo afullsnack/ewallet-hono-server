@@ -3,6 +3,8 @@ import { logger } from "../../middlewares/logger";
 import appFactory from "../../app";
 import { updateUserHandlers } from "./update";
 import { getUserWithWallets } from "../../db";
+import { getBalance } from "src/_lib/biconomy/client.mts";
+import { Address } from "viem";
 
 const userRoute = appFactory.createApp();
 
@@ -24,7 +26,10 @@ const getUserHandlers = appFactory.createHandlers(async (c) => {
   const user = await getUserWithWallets(session.userId)
   if(!user) throw new HTTPException(404, {message: 'User was not found in db'});
 
-  return c.json(user, 200);
+  const balance = await getBalance(84532, user?.wallets[0]?.address! as Address)
+  logger.info("balance:::", balance)
+
+  return c.json({user, balance}, 200);
 })
 
 userRoute.post('/update', ...updateUserHandlers);
