@@ -12,8 +12,8 @@ const userRoute = appFactory.createApp();
 // middleware to check request is by authorized user
 userRoute.use(async (c, next) => {
   const session = c.get('session');
-  if(!session) {
-    throw new HTTPException(401, {message: 'Unauthorized to access this route'});
+  if (!session) {
+    throw new HTTPException(401, { message: 'Unauthorized to access this route' });
   }
   await next();
 });
@@ -25,13 +25,17 @@ const getUserHandlers = appFactory.createHandlers(async (c) => {
     throw new HTTPException(404, { message: 'User session not found' });
   }
   const user = await getUserWithWallets(session.userId)
-  if(!user) throw new HTTPException(404, {message: 'User was not found in db'});
+  if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
-  const {data: balance, error} = await tryCatch(getBalance(84532, user?.wallets[0]?.address! as Address))
-  logger.error(error)
-  logger.info("balance:::", balance)
+  let balance: number = 0;
+  if (user?.wallets.length) {
+    const { data, error } = await tryCatch(getBalance(84532, user?.wallets[0]?.address! as Address))
+    logger.error(error)
+    logger.info("balance:::", balance)
+    if(data) balance = data;
+  }
 
-  return c.json({user, balance}, 200);
+  return c.json({ user, balance }, 200);
 })
 
 userRoute.post('/update', ...updateUserHandlers);
