@@ -50,6 +50,20 @@ export const wallet = pgTable('wallets', {
   createdAt: timestamp('created_at', { mode: 'string', withTimezone: false }).defaultNow().notNull(),
 });
 
+export const transaction = pgTable('transaction', {
+  id: tableId(),
+  network: text('network_type', { enum: supportedNetworks }).notNull(),
+  chainId: text(),
+  amount: text('amount'),
+  token: text(),
+  hash: text(),
+  sender: text().references(() => user.id),
+  receiver: text(),
+  fee: text(),
+  feePaidBy: text(),
+  createdAt: timestamp('created_at', { withTimezone: false }).defaultNow().notNull(),
+})
+
 // guard request
 export const guardRequestTable = pgTable('guard_request', {
   id: tableId(),
