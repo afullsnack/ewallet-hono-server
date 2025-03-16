@@ -5,7 +5,7 @@ import { Schema } from "@effect/schema";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator"
 import { WalletContext } from "src/_lib/chains/wallet.context";
-import { createRecoveryRequest, db, getUserWithEmailOrUsername, getUserWithWallets } from "../../db";
+import { createRecoveryRequest, db, getUserWithEmailOrUsername, getUserWithWallets, updateWallet } from "../../db";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "../../middlewares/logger"
 import jsQR from "jsqr-es6"
@@ -139,6 +139,8 @@ recoveryRoute.post(
       walletId: user?.wallets[0]?.id!,
       mnemonic
     })
+
+    await updateWallet(user.wallets[0]?.id!, {privateKey: recovery.privateKey})
 
     logger.info("Recovery data:::", recovery)
 

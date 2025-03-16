@@ -6,6 +6,7 @@ import { db, getUserWithWallets } from "../../db";
 import { generateQR } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
+import { transactionRoute } from "./transaction";
 
 const walletRoute = appFactory.createApp();
 walletRoute.route('/recover', recoveryRoute);
@@ -72,5 +73,6 @@ const backupWallet = appFactory.createHandlers(async (c) => {
 walletRoute.get('/', ...getWallet);
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
+walletRoute.route('/transaction', transactionRoute);
 
 export { walletRoute };
