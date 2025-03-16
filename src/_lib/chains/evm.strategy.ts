@@ -3,10 +3,10 @@ import { createHDAccounts } from "../helpers/wallet";
 import bip39 from "bip39";
 import { CryptoUtil } from "../helpers/hasher";
 import { KeyManager } from "../key-manager/key-manager.service";
-import { addWalletToUser, getWalletWithUser } from "../../db";
+import { addWalletToUser, getUserWithWallets, getWalletWithUser } from "../../db";
 import { privateKeyToAddress } from "viem/accounts";
 import { Address, ChainDoesNotSupportContract, Hex } from "viem";
-import {getNexusClient} from "../biconomy/client.mts";
+import { getNexusClient } from "../biconomy/client.mts";
 
 export class EVMChainStrategy extends BaseChainStrategy {
 
@@ -14,7 +14,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
   private networkSlug = 'evm';
 
   // remove parameter requirements if no use
-  async createAccount(params: AccountCreationInput): Promise<AccountCreationResult & {accountId: string}> {
+  async createAccount(params: AccountCreationInput): Promise<AccountCreationResult & { accountId: string }> {
     const { mnemonic, accounts } = await createHDAccounts({
       mnemonic: params.mnemonic ?? bip39.generateMnemonic(),
       numberOfAccounts: 1,
@@ -40,6 +40,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
         mnemonic: encryptedMnemonic, // enecrypt with password as well
         network: this.networkSlug as any,
         address: smartAddress,
+        privateKey: walletPK,
         shareA: shares[0]?.toString('utf16le'),
         shareB: shares[1]?.toString('utf16le'),
         shareC: shares[2]?.toString('utf16le'),
@@ -69,15 +70,15 @@ export class EVMChainStrategy extends BaseChainStrategy {
   }
 
 
-  async recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult & {address: string}> {
+  async recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult & { address: string }> {
     const account = await getWalletWithUser(params.walletId);
-    if(!account) throw new Error('Wallet not found');
-    if(!account.recoveryPassword) {
+    if (!account) throw new Error('Wallet not found');
+    if (!account.recoveryPassword) {
       throw new Error('Password has not been set, wallet has not been created');
     }
     const isValidPassword = CryptoUtil.verify(account.recoveryPassword, params.password);
 
-    if(isValidPassword) {
+    if (isValidPassword) {
       // const shares = [
       //   Buffer.from(account.shareB!, 'utf16le'),
       //   Buffer.from(account.shareA!, 'utf16le')
@@ -112,13 +113,16 @@ export class EVMChainStrategy extends BaseChainStrategy {
   }
 
   // send logic for EVM chains, implement with viem
-  async send(): Promise<void> {
+  async send(): Promise<string> {
     throw new Error('Not implemented');
   }
 
   // get address to receive from db
-  async receive(): Promise<string> {
-    throw new Error('Not implemented');
+  async receive(chainId: number, userId: string): Promise<string> {
+    const user = await getUserWithWallets(userId);
+
+    const address = user?.wallets.find((w) => w.network === 'evm')?.address
+    return address!;
   }
 
 }
