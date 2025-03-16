@@ -1,7 +1,7 @@
 
 import { privateKeyToAccount } from "viem/accounts";
 import * as chains from "viem/chains";
-import { Address, Hex, http, zeroAddress, extractChain } from "viem";
+import { Address, Hex, http, zeroAddress, extractChain, createPublicClient, formatEther } from "viem";
 import {
   // createMeeClient,
   createSmartAccountClient,
@@ -46,4 +46,16 @@ export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, w
     //     console.log(error, ":::error minx");
     //     return {address}
     // }
+}
+
+
+export const getBalance = async (chainId: number = 84532, address: Address) => {
+    const publicClient = createPublicClient({
+        chain: extractChain({chains: Object.values(chains) as chains.Chain[], id: chainId}),
+        transport: http()
+    })
+
+    const balance = await publicClient.getBalance({address})
+    console.log(balance, ":::balance of account")
+    return Number(formatEther(balance, 'wei'));
 }
