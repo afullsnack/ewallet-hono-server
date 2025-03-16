@@ -45,6 +45,7 @@ export const wallet = pgTable('wallets', {
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   network: text('network_type', { enum: supportedNetworks }).notNull(),
   address: text(),
+  privateKey: text(),
   mnemonic: text().notNull(),
   shareA: text('share_a'), // our db only stores share_a
   shareB: text('share_b'), // sits on users device
