@@ -1,14 +1,7 @@
 import appFactory from "../../app";
-import { effectValidator } from "@hono/effect-validator"; 
-import {Schema} from "@effect/schema";
+import { zValidator } from "@hono/zod-validator";
+import {z} from "zod"
 
-const Body = Schema.Struct({
-  guardian: Schema.String
-});
-const guardian = appFactory.createHandlers(effectValidator('json', Body), async (c) => {
-  const body = c.req.valid('json');
-});
-
+const guardian = appFactory.createApp();
 
 export { guardian };
-export type ICreateGuardian = typeof Body.Type;
