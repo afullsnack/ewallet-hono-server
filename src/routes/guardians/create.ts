@@ -1,6 +1,8 @@
 import appFactory from "../../app";
 import { zValidator } from "@hono/zod-validator";
-import { db } from "src/db";
+import { HTTPException } from "hono/http-exception";
+import { db, getUserWithEmailOrUsername } from "src/db";
+import { guardRequestTable } from "src/db/schema";
 import { z } from "zod"
 
 const guardian = appFactory.createApp();
@@ -84,11 +86,7 @@ guardian.post(
 
     let response: Record<string, any>;
     if (!user) {
-      response = {
-        success: false,
-        message: 'Guardian with email not found',
-        address: null
-      }
+      throw new HTTPException(404, { message: 'Guardian with email not found' })
     } else {
       response = {
         success: true,
@@ -108,28 +106,25 @@ guardian.post(
   })),
   async (c) => {
     const body = c.req.valid('json')
-    // TODO: check if the provided guardian email exists
+    // TODO: add guardian to users guardian request list
+    const user = c.get('user')
+    if(!user) throw new HTTPException(404, {message: 'User not authorised to make this request'})
 
-    const user = await db.query.user.findFirst({
-      where: ((user, { eq }) => eq(user.email, body.email)),
-      with: {
-        wallets: true
-      }
-    });
+    const guardian = await getUserWithEmailOrUsername(body.email);
+    if(!guardian) throw new HTTPException(404, {message: 'Guardain not found'})
 
-    let response: Record<string, any>;
-    if (!user) {
-      response = {
-        success: false,
-        message: 'Guardian with email not found',
-        address: null
-      }
-    } else {
-      response = {
-        success: true,
-        message: 'Guardian found',
-        address: user.wallets.find((w) => w.network === 'evm')?.address ?? 'not-created'
-      }
+    const [newGuardianRequest] = await db.insert(guardRequestTable)
+      .values({
+        requestorId: user.id,
+        guardianId: guardian.id
+      }).returning();
+
+    // TODO: send email/notification for guardian to accept or reject request
+
+    let response: Record<string, any> = {
+      success: true,
+      message: 'Guardain request sent',
+      data: newGuardianRequest
     }
 
     return c.json(response)
