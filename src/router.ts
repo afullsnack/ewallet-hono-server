@@ -11,6 +11,7 @@ import { guardianRoute } from "./routes/guardians";
 import { walletRoute } from "./routes/wallet";
 import { userRoute } from "./routes/user";
 import { auth } from "./_lib/shared/auth";
+import { HttpRequestError } from "viem";
 
 
 export function setupRouter(app: Hono<Env>) {
@@ -30,7 +31,7 @@ export function setupRouter(app: Hono<Env>) {
   app.use("*", async (c, next) => {
     // set session
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
-    
+
     if (!session) {
       c.set('user', null);
       c.set('session', null);
@@ -58,17 +59,23 @@ export function setupRouter(app: Hono<Env>) {
   v1App.notFound((c) => {
     return c.text(`Could not find the route, ${c.req.url}`);
   });
-  // app.onError((err, c) => {
-  //   console.error(err, 'On error');
-  //   return c.json(
-  //     {
-  //       status: "failed",
-  //       message: "Internal server error",
-  //       error: JSON.stringify(err, null, 4)
-  //     },
-  //     err.cause
-  //   );
-  // });
+  app.onError((err, c) => {
+    console.error(err, typeof err, {action: 'error-occurred'});
+    if (err instanceof HttpRequestError) {
+      return c.json({
+        success: false,
+        message: err.message,
+        details: err.details,
+        url: err.url
+      }, 500)
+    }
+    return c.json({
+      success: false,
+      message: err.message,
+      details: err.stack,
+      name: err.name
+    }, 500);
+  });
   showRoutes(app, {
     verbose: true,
     colorize: true,
