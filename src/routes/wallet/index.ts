@@ -7,6 +7,7 @@ import { generateQR } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
+import { networkRoute } from "./network"
 
 const walletRoute = appFactory.createApp();
 walletRoute.route('/recover', recoveryRoute);
@@ -28,7 +29,7 @@ const getWallet = appFactory.createHandlers(async (c) => {
   const wallets = await Promise.all(
     user.wallets.map(async (w) => {
       // if its already backedup means shares B and C have been removed
-      if(w.isBackedUp) {
+      if (w.isBackedUp) {
         return {
           address: w.address,
           network: w.network,
@@ -39,9 +40,9 @@ const getWallet = appFactory.createHandlers(async (c) => {
       const localKey = w.shareB!;
       console.log(qrBase64, ":::utf16le qr")
       console.log(localKey, ":::localkey utf16le")
-      const {data: qrCode, error} = await tryCatch(generateQR(qrBase64));
-      if(error) throw new HTTPException(500, {message: error.message});
-      
+      const { data: qrCode, error } = await tryCatch(generateQR(qrBase64));
+      if (error) throw new HTTPException(500, { message: error.message });
+
       return {
         qrCode,
         localKey,
@@ -74,5 +75,6 @@ walletRoute.get('/', ...getWallet);
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
 walletRoute.route('/transaction', transactionRoute);
+walletRoute.route('/network', networkRoute);
 
 export { walletRoute };

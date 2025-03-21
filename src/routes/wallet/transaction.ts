@@ -3,11 +3,11 @@ import app from "../../app"
 import { HTTPException } from "hono/http-exception";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { Address, formatEther, isAddress, parseEther } from "viem";
+import { Address, formatEther, Hex, isAddress, parseEther } from "viem";
 import { getNexusClient, getTransactionEstimate, sendTransaction } from "../../_lib/biconomy/client.mts";
 import { transaction as transactionTable } from "../../db/schema";
-import { status } from "effect/Fiber";
 import { tryCatch } from "src/_lib/try-catch";
+import { getQuoteAndExecute, TokenSymbol } from "src/_lib/uniswap/swap.route";
 
 const transactionRoute = app.createApp();
 
@@ -125,6 +125,43 @@ transactionRoute.post(
       message: 'Transaction sent',
       updatedTx
     })
+  }
+)
+
+
+transactionRoute.post(
+  '/swap',
+  zValidator('json', z.object({
+    tokenInSymbol: z.string(),
+    tokenOutSymbol: z.string(),
+    tokenInAmount: z.string(),
+    execute: z.boolean().default(false)
+  })),
+  async (c) => {
+    const body = c.req.valid('json');
+    const sessionUser = c.get('user')
+    if(!sessionUser) {
+      throw new HTTPException(404, {message: 'Session user not found'})
+    }
+
+    const userWallet = await getUserWithWallets(sessionUser.id)
+
+    if(!body.execute) {
+      const result = await getQuoteAndExecute({
+        tokenInSymbol: body.tokenInSymbol as TokenSymbol,
+        tokenOutSymbol: body.tokenOutSymbol as TokenSymbol,
+        tokenInAmount: body.tokenInAmount,
+        execute: body.execute,
+        address: userWallet?.wallets[0]?.address!,
+        userPK: userWallet?.wallets[0]?.privateKey! as Hex
+      })
+
+      return c.json({
+        success: false,
+        message: 'Swap quote gotten',
+        result
+      })
+    }
   }
 )
 
