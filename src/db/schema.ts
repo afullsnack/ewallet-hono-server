@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { customType, pgTable, text, boolean, json, timestamp, integer } from "drizzle-orm/pg-core";
+import { customType, pgTable, text, boolean, json, timestamp } from "drizzle-orm/pg-core";
 import { v4 as uuidv4 } from "uuid";
 
 // TODO: move to network domain
@@ -36,7 +36,8 @@ export const user = pgTable("users", {
   username: text().unique(),
   createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().$onUpdateFn(() => new Date(Date.now()).toISOString()),
-  metadata: json(), // will hold a json array of custom networks and token data
+  tokens: json(), // will be an array of token objects with {address, symbol, name, chain}
+  chains: text().array(), // array of chainids if evm, and chain slugs if not for the user
   isFullyOnboarded: boolean().default(false),
 });
 

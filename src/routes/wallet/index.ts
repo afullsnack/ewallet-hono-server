@@ -61,10 +61,8 @@ const backupWallet = appFactory.createHandlers(async (c) => {
   const userId = c.get('user')?.id;
   if (!userId) throw new HTTPException(404, { message: 'User not found' });
 
-  const { error, data } = await tryCatch(db.update(wallet).set({
+  const { error } = await tryCatch(db.update(wallet).set({
     isBackedUp: true,
-    // shareC: null,
-    // shareB: null
   }));
   if (error) throw new HTTPException(500, { message: 'Something went wrong backing up wallet' });
 
