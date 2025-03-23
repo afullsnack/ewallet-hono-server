@@ -21,7 +21,6 @@ export interface AccountRecoveryInput {
 export interface IBaseChainStrategy {
   createAccount: (params: AccountCreationInput) => Promise<AccountCreationResult & {accountId: string}>;
   recoverAccount: (params: AccountRecoveryInput) => Promise<AccountRecoveryResult>;
-  init: () => Promise<Record<string, any>>;
   send: () => Promise<string>;
   receive: (chainId:number, userId: string) => Promise<string>;
 }
@@ -29,7 +28,6 @@ export interface IBaseChainStrategy {
 export abstract class BaseChainStrategy implements IBaseChainStrategy {
   abstract createAccount(params: AccountCreationInput): Promise<AccountCreationResult & {accountId: string}>;
   abstract recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult>;
-  abstract init(): Promise<Record<string, any>>;
   abstract send(): Promise<string>;
   abstract receive(chainId: number, userId: string): Promise<string>;
 }

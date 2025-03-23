@@ -3,10 +3,11 @@ import { createHDAccounts } from "../helpers/wallet";
 import bip39 from "bip39";
 import { CryptoUtil } from "../helpers/hasher";
 import { KeyManager } from "../key-manager/key-manager.service";
-import { addWalletToUser, getUserWithWallets, getWalletWithUser } from "../../db";
+import { addWalletToUser, getUserWithWallets, getWalletWithUser, updateUser } from "../../db";
 import { privateKeyToAddress } from "viem/accounts";
 import { Address, ChainDoesNotSupportContract, Hex } from "viem";
 import { getNexusClient } from "../biconomy/client.mts";
+import { defaultChainIds, defaultUSDCTokens, defaultUSDTTokens } from "../utils";
 
 export class EVMChainStrategy extends BaseChainStrategy {
 
@@ -46,6 +47,11 @@ export class EVMChainStrategy extends BaseChainStrategy {
         shareC: shares[2]?.toString('utf16le'),
         recoveryPassword: hashedPassword,
       });
+      // update user with default tokens and chain ids
+      await updateUser(params.userId, {
+        chains: defaultChainIds.map(id => id.toString()),
+        tokens: defaultUSDCTokens.concat(defaultUSDTTokens)
+      })
       return {
         accountId: result!.id,
         address: smartAddress
@@ -62,6 +68,10 @@ export class EVMChainStrategy extends BaseChainStrategy {
       shareB: shares[1]?.toString('utf16le'),
       shareC: shares[2]?.toString('utf16le'),
     });
+    await updateUser(params.userId, {
+      chains: defaultChainIds.map(id => id.toString()),
+      tokens: defaultUSDCTokens.concat(defaultUSDTTokens)
+    })
 
     return {
       accountId: result!.id,
@@ -98,6 +108,13 @@ export class EVMChainStrategy extends BaseChainStrategy {
       const walletPK = accounts[0]!.privateKey;
 
       console.log(walletPK, ":::wallet PK")
+      // update user with default configs
+      if (!account.user.chains || !account.user.tokens) {
+        await updateUser(account.user.id, {
+          chains: defaultChainIds.map(id => id.toString()),
+          tokens: defaultUSDCTokens.concat(defaultUSDTTokens)
+        })
+      }
 
       const nClient = await getNexusClient(`${walletPK}`);
       const smartAddress = nClient.account.address;
