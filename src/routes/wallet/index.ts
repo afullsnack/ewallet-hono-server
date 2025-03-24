@@ -3,7 +3,7 @@ import appFactory from "../../app";
 import { createWalletHandler } from "./create";
 import { recoveryRoute } from "./recover";
 import { db, getUserWithWallets } from "../../db";
-import { generateQR } from "../../_lib/utils";
+import { generateQR, WalletToken } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
@@ -11,6 +11,8 @@ import { networkRoute } from "./network"
 import { getBalance } from "../../_lib/biconomy/client.mts";
 import { logger } from "../../middlewares/logger";
 import { Address } from "viem";
+import { zValidator } from "@hono/zod-validator";
+import { z } from 'zod'
 
 const walletRoute = appFactory.createApp();
 walletRoute.route('/recover', recoveryRoute);
@@ -72,39 +74,74 @@ const backupWallet = appFactory.createHandlers(async (c) => {
   })
 })
 
-const getUserBalance = appFactory.createHandlers(async (c) => {
+const getUserAssets = appFactory.createHandlers(async (c) => {
   const session = c.get('session');
+  const params = c.req.param();
+  console.log("Params:::", params);
+
   if (!session) {
     throw new HTTPException(404, { message: 'User session not found' });
   }
   const user = await getUserWithWallets(session.userId)
   if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
-  let balance: number = 0;
+  const assets: (WalletToken & {balance: number, usdBalance: number})[] = [];
   if (user?.wallets.length) {
-    const { data, error } = await tryCatch(getBalance(84532, user?.wallets[0]?.address! as Address))
-    logger.error(error)
-    logger.info("balance:::", balance)
-    if (data) balance = data;
+    for (const wallet of user.wallets) {
+      if (wallet.tokens) {
+        const tokens = wallet.tokens as WalletToken[]
+        let balance: number = 0;
+        for(const token of tokens) {
+          if (token.isNative) {
+            const { data, error } = await tryCatch(getBalance(Number(wallet.chainId!), wallet?.address! as Address))
+            // TODO: get price as well
+            logger.error(error)
+            logger.info("balance:::", balance)
+            if (data) balance += data;
+          }else {
+            // TODO: get non-native currency balance
+            // and price
+          }
+
+          
+        }
+        
+      }
+    }
   }
 
   const usdBalance = balance * 1963;
-  const assets = [
-    {
-      title: 'Base',
-      exchange: 0.08,
-      asset: balance,
-      slug: 'ETH',
-      pip: usdBalance,
-      signal: 0.31
-    }
-  ]
+  // const assets = [
+  //   {
+  //     title: 'Base',
+  //     exchange: 0.08,
+  //     asset: balance,
+  //     slug: 'ETH',
+  //     pip: usdBalance,
+  //     signal: 0.31
+  //   }
+  // ]
 
   return c.json({ balance: usdBalance, assets, network: 'USD' }, 200)
 })
 
+
+const getAssetsInfo = appFactory.createHandlers(
+  zValidator('param', z.object({
+    chainId: z.string().default('all'),
+    address: z.string().default('all')
+  })),
+  async (c) => {
+    const params = c.req.valid('param');
+    logger.info('Params:::', params)
+    if (params.chainId === 'all' && params.address === 'all') {
+      // return all tokens in wallet table for users
+    }
+  })
+
 walletRoute.get('/', ...getWallet);
-walletRoute.get('/balance', ...getUserBalance);
+walletRoute.get('/:chainId/:address/info', ...getAssetsInfo)
+walletRoute.get('/assets', ...getUserAssets);
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
 walletRoute.route('/transaction', transactionRoute);
