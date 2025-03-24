@@ -19,14 +19,14 @@ export interface AccountRecoveryInput {
   mnemonic: string;
 };
 export interface IBaseChainStrategy {
-  createAccount: (params: AccountCreationInput) => Promise<AccountCreationResult & {accountId: string}>;
+  createAccount: (params: AccountCreationInput) => Promise<AccountCreationResult>;
   recoverAccount: (params: AccountRecoveryInput) => Promise<AccountRecoveryResult>;
   send: () => Promise<string>;
   receive: (chainId:number, userId: string) => Promise<string>;
 }
 
 export abstract class BaseChainStrategy implements IBaseChainStrategy {
-  abstract createAccount(params: AccountCreationInput): Promise<AccountCreationResult & {accountId: string}>;
+  abstract createAccount(params: AccountCreationInput): Promise<AccountCreationResult>;
   abstract recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult>;
   abstract send(): Promise<string>;
   abstract receive(chainId: number, userId: string): Promise<string>;
