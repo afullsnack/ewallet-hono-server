@@ -13,6 +13,7 @@ import sharp from "sharp"
 import { recoveryRequestTable } from "src/db/schema";
 import { CryptoUtil } from "src/_lib/helpers/hasher";
 import { eq } from "drizzle-orm";
+import { defaultChainIds } from "../../_lib/utils";
 
 
 export const recoveryRoute = appFactory.createApp();
@@ -120,14 +121,22 @@ recoveryRoute.post(
       throw new HTTPException(404,{message: 'Wallet not created for user'})
     }
 
-    const isPassword = CryptoUtil.verify(user?.wallets[0]?.recoveryPassword!, body.password)
+    const evmWalletPassword = user?.wallets.find((w) => w.network === 'evm')?.recoveryPassword;
+    const evmWalletId = user?.wallets.find((w) => w.network === 'evm')?.id;
+    const evmMnemonic = user?.wallets.find((w) => w.network === 'evm')?.mnemonic;
+
+    if(!evmWalletPassword || !evmWalletId || !evmMnemonic) {
+      throw new HTTPException(404, {message: 'Wallet password hash, id, and mnemonic not found'})
+    }
+
+    const isPassword = CryptoUtil.verify(evmWalletPassword, body.password)
     if(!isPassword) {
       logger.error('password match', isPassword)
 
       throw new HTTPException(401, {message: 'Password is invalid or incorrect'})
     }
 
-    const mnemonic = CryptoUtil.decrypt(user.wallets[0]?.mnemonic!, body.password)
+    const mnemonic = CryptoUtil.decrypt(evmMnemonic, body.password)
     console.log(mnemonic, ":::decrypted pnemonic")
     // const backup = Buffer.from(recoverReq.keyData!);
     // console.log(backup, ":::backup buffer")
@@ -136,12 +145,9 @@ recoveryRoute.post(
     const recovery = await walletContext.recoverAccount({
       backupShare: recoverReq.keyData!,
       password: body.password,
-      walletId: user?.wallets[0]?.id!,
+      walletId: evmWalletId,
       mnemonic
     })
-
-    await updateWallet(user.wallets[0]?.id!, {privateKey: recovery.privateKey})
-
     logger.info("Recovery data:::", recovery)
 
     return c.json({
