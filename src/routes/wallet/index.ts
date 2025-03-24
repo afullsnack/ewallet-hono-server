@@ -8,20 +8,22 @@ import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
 import { networkRoute } from "./network"
-import { getBalance } from "../../_lib/biconomy/client.mts";
+import { getBalance, getNonNativeBalance } from "../../_lib/biconomy/client.mts";
 import { logger } from "../../middlewares/logger";
-import { Address } from "viem";
+import { Address, extractChain, isAddress } from "viem";
 import { zValidator } from "@hono/zod-validator";
-import { z } from 'zod'
+import { z } from 'zod';
+import * as chains from "viem/chains";
+import * as logoAssets from "../../coin_map.json";
 
 const walletRoute = appFactory.createApp();
 walletRoute.route('/recover', recoveryRoute);
 
-walletRoute.use(async (c, next) => {
-  const session = c.get('session');
-  if (!session) throw new HTTPException(401, { message: 'Unauthorized access' });
-  await next();
-})
+// walletRoute.use(async (c, next) => {
+//   const session = c.get('session');
+//   if (!session) throw new HTTPException(401, { message: 'Unauthorized access' });
+//   await next();
+// })
 
 const getWallet = appFactory.createHandlers(async (c) => {
   const userId = c.get('user')?.id;
@@ -85,44 +87,73 @@ const getUserAssets = appFactory.createHandlers(async (c) => {
   const user = await getUserWithWallets(session.userId)
   if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
-  const assets: (WalletToken & {balance: number, usdBalance: number})[] = [];
+  const assets: (WalletToken & { balance: number, usdBalance: number })[] = [];
   if (user?.wallets.length) {
     for (const wallet of user.wallets) {
       if (wallet.tokens) {
         const tokens = wallet.tokens as WalletToken[]
         let balance: number = 0;
-        for(const token of tokens) {
+        for (const token of tokens) {
           if (token.isNative) {
             const { data, error } = await tryCatch(getBalance(Number(wallet.chainId!), wallet?.address! as Address))
             // TODO: get price as well
-            logger.error(error)
+            if (error) {
+              logger.error(error)
+              throw new Error('Failed to get balances')
+            }
             logger.info("balance:::", balance)
             if (data) balance += data;
-          }else {
-            // TODO: get non-native currency balance
+            const existingAsset = assets.find((a) => a.symbol === token.symbol)
+            if (existingAsset) {
+              assets.filter((a) => a.symbol !== token.symbol).push({
+                ...token,
+                balance: data + existingAsset.balance,
+                usdBalance: (data * 1920) + existingAsset.usdBalance
+              })
+            }
+            assets.push({
+              ...token,
+              balance: data,
+              usdBalance: data * 1920
+            })
+          } else {
             // and price
+            if (token.address && !isAddress(token.address)) {
+              throw new Error('Token address is invalid')
+            }
+            const { data, error } = await tryCatch(getNonNativeBalance(Number(wallet.chainId), token.address as Address, wallet.address as Address))
+            if (error) {
+              logger.error('Error:::', error)
+              throw new Error('Failed to get non-native balances')
+            }
+            logger.info('Balance:::', data)
+            if (data) balance += data
+            const existingAsset = assets.find((a) => a.symbol === token.symbol)
+            if (existingAsset) {
+              assets.filter((a) => a.symbol !== token.symbol).push({
+                ...token,
+                balance: data + existingAsset.balance,
+                usdBalance: (data * 1920) + existingAsset.usdBalance
+              })
+            }
+            assets.push({
+              ...token,
+              balance: data,
+              usdBalance: data * 1920
+            })
           }
-
-          
         }
-        
+        logger.info('Assets:::', assets)
       }
     }
   }
 
-  const usdBalance = balance * 1963;
-  // const assets = [
-  //   {
-  //     title: 'Base',
-  //     exchange: 0.08,
-  //     asset: balance,
-  //     slug: 'ETH',
-  //     pip: usdBalance,
-  //     signal: 0.31
-  //   }
-  // ]
-
-  return c.json({ balance: usdBalance, assets, network: 'USD' }, 200)
+  const totalUsdBalance = assets.reduce((pre, cur) => pre + cur.usdBalance, 0)
+  return c.json({
+    balance: totalUsdBalance,
+    assets,
+    network: 'USD'
+  }, 200)
 })
 
 
@@ -133,18 +164,53 @@ const getAssetsInfo = appFactory.createHandlers(
   })),
   async (c) => {
     const params = c.req.valid('param');
-    logger.info('Params:::', params)
+    const user = c.get('user');
+    logger.info('Params:::', params);
     if (params.chainId === 'all' && params.address === 'all') {
       // return all tokens in wallet table for users
+      const userWallets = await db.query.wallet.findMany({
+        where: ((wa, { eq }) => eq(wa.userId, user?.id!))
+      })
+
+      const assets = userWallets.map((wallet) => {
+        const tokens = wallet.tokens as WalletToken[]
+        const chain = extractChain({chains: Object.values(chains), id: Number(wallet.chainId) as any})
+        return {
+          tokens,
+          chain: {
+            name: chain.name,
+            imgUrl: logoAssets.find((l) => l.name === chain.name)
+          }
+        }
+      })
+      return c.json(assets);
     }
   })
 
+
+const addTokenHandler = appFactory.createHandlers(
+  zValidator('param', z.object({
+    chainId: z.string().min(3),
+    symbol: z.string().min(3)
+  })),
+  (c) => {
+    const params = c.req.valid('param')
+    console.log('Params:::', params)
+
+    return c.json({})
+  }
+)
+
 walletRoute.get('/', ...getWallet);
-walletRoute.get('/:chainId/:address/info', ...getAssetsInfo)
+
+walletRoute.get('/:chainId/:symbol/info', ...getAssetsInfo)
+walletRoute.post('/:chainId/:symbol/add', ...addTokenHandler)
 walletRoute.get('/assets', ...getUserAssets);
+
 walletRoute.post('/create', ...createWalletHandler);
 walletRoute.put('/backup', ...backupWallet);
 walletRoute.route('/transaction', transactionRoute);
+
 walletRoute.route('/network', networkRoute);
 
 export { walletRoute };

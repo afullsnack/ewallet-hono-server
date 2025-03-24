@@ -1,7 +1,7 @@
 
 import { privateKeyToAccount } from "viem/accounts";
 import * as chains from "viem/chains";
-import { Address, Hex, http, zeroAddress, extractChain, createPublicClient, formatEther } from "viem";
+import { Address, Hex, http, zeroAddress, extractChain, createPublicClient, formatEther, erc20Abi } from "viem";
 import {
   // createMeeClient,
   createSmartAccountClient,
@@ -81,4 +81,19 @@ export const getBalance = async (chainId: number = 84532, address: Address) => {
     const balance = await publicClient.getBalance({address})
     console.log(balance, ":::balance of account")
     return Number(formatEther(balance, 'wei'));
+}
+
+export const getNonNativeBalance = async (chainId: number, tokenAddress: Address, walletAddress: Address) => {
+    const publicClient = createPublicClient({
+        chain:extractChain({chains: Object.values(chains) as chains.Chain[], id: chainId}),
+        transport: http()
+    })
+    const balance = await publicClient.readContract({
+        address: tokenAddress,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [walletAddress]
+    })
+    console.log('Balance:::', balance)
+    return Number(formatEther(balance, 'wei'))
 }
