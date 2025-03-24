@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { customType, pgTable, text, boolean, json, timestamp } from "drizzle-orm/pg-core";
+import { defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "src/_lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
 // TODO: move to network domain
@@ -36,8 +37,6 @@ export const user = pgTable("users", {
   username: text().unique(),
   createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true }).defaultNow().$onUpdateFn(() => new Date(Date.now()).toISOString()),
-  tokens: json(), // will be an array of token objects with {address, symbol, name, chain}
-  chains: text().array(), // array of chainids if evm, and chain slugs if not for the user
   isFullyOnboarded: boolean().default(false),
 });
 
@@ -45,6 +44,8 @@ export const wallet = pgTable('wallets', {
   id: tableId(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   network: text('network_type', { enum: supportedNetworks }).notNull(),
+  tokens: json().default(defaultNativeTokens.concat(defaultUSDCTokens, defaultUSDTTokens)), // will be an array of token objects with {address, symbol, name, chain}
+  chainId: text().default('84532'), // array of chainids if evm, and chain slugs if not for the user
   address: text(),
   privateKey: text(),
   mnemonic: text().notNull(),
