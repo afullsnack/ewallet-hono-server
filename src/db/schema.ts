@@ -45,7 +45,8 @@ export const wallet = pgTable('wallets', {
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   network: text('network_type', { enum: supportedNetworks }).notNull(),
   tokens: json().default(defaultNativeTokens.concat(defaultUSDCTokens, defaultUSDTTokens)), // will be an array of token objects with {address, symbol, name, chain}
-  chainId: text().default('84532'), // array of chainids if evm, and chain slugs if not for the user
+  chainId: text().default('84532'),
+  chainLogo: text(),
   address: text(),
   privateKey: text(),
   mnemonic: text().notNull(),
