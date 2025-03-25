@@ -36,7 +36,6 @@ export const createWalletHandler = appFactory.createHandlers(
       status: 'success',
       message: 'Wallet created successfuly',
       data: {
-        accountId: createResult.accountId,
         address: createResult.address,
       }
     }, 201);
