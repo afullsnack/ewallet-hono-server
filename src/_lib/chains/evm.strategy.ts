@@ -7,7 +7,7 @@ import { addWalletToUser, db, getUserWithWallets, getWalletWithUser, updateUser,
 import { privateKeyToAddress } from "viem/accounts";
 import { Address, ChainDoesNotSupportContract, Hex } from "viem";
 import { getNexusClient } from "../biconomy/client.mts";
-import { defaultChainIds, defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "../utils";
+import { chainLogos, defaultChainIds, defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "../utils";
 import { wallet } from "src/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -46,6 +46,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
         address: smartAddress,
         privateKey: walletPK,
         chainId: id.toString(),
+        chainLogo: chainLogos[id],
         tokens: defaultTokens.filter((token) => token.chain === id),
         shareA: shares[0]?.toString('utf16le'),
         shareB: shares[1]?.toString('utf16le'),
@@ -142,6 +143,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
           userId: user.id,
           privateKey: walletPK,
           chainId: id.toString(),
+          chainLogo: chainLogos[id],
           tokens: defaultTokens.filter((token) => token.chain === id),
           recoveryPassword: account.recoveryPassword,
         })

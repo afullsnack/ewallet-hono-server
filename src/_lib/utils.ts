@@ -37,6 +37,19 @@ export const defaultChainIds = [
   bscTestnet.id
 ]
 
+export const chainLogos: Record<number, string> = {
+  [sepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+  [mainnet.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+  [bsc.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
+  [bscTestnet.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
+  [polygon.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png',
+  [polygonAmoy.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png',
+  [arbitrum.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png',
+  [arbitrumSepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png',
+  [base.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27716.png',
+  [baseSepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27716.png'
+}
+
 // maybe add default USDc and USDt addresses to the default network
 export interface WalletToken {
   address?: string;
@@ -89,7 +102,7 @@ export const defaultUSDTTokens = [
     isNative: false
   },
   {
-    address: '',
+    address: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',
     decimals: 6,
     name: 'Tether USD',
     symbol: 'USDT',
@@ -107,7 +120,7 @@ export const defaultUSDTTokens = [
     isNative: false
   },
   {
-    address: '',
+    address: '0x3109953bc0db7bbcbe4e3b000886d9b2a52c2877',
     decimals: 6,
     name: 'Tether USD',
     symbol: 'USDT',
