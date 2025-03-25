@@ -16,6 +16,13 @@ const transactionStatus = [
   'complete',
   'failed'
 ] as const;
+const transactionType = [
+  'transfer',
+  'received',
+  'swap',
+  'sell',
+  'buy'
+] as const;
 const guardianRequestStatus = [
   'accepted',
   'canceled',
@@ -66,6 +73,7 @@ export const transaction = pgTable('transaction', {
   chainId: text(),
   amount: text('amount'),
   token: text(),
+  type: text({enum: transactionType}).default('transfer'),
   status: text('status', { enum: transactionStatus}).notNull().default('initiated'),
   hash: text(),
   sender: text().references(() => user.id),
