@@ -3,7 +3,7 @@ import appFactory from "../../app";
 import { createWalletHandler } from "./create";
 import { recoveryRoute } from "./recover";
 import { db, getUserWithWallets, getWalletWithUser } from "../../db";
-import { generateQR, WalletToken } from "../../_lib/utils";
+import { generateQR, getCoingeckoTokenIdList, WalletToken } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
@@ -163,23 +163,31 @@ const getAssetsInfo = appFactory.createHandlers(
     const params = c.req.valid('param');
     const user = c.get('user');
     if (!user) throw new HTTPException(404, { message: 'User not found' })
-    logger.info('Params:::', params);
+    console.log('Params:::', params);
     // return all tokens in wallet table for users
     const userWallets = await getUserWithWallets(user?.id!)
     if(!userWallets) throw new HTTPException(404, {message: 'Wallet not found'})
 
-    const assets = userWallets?.wallets.map((wallet) => {
-      const tokens = wallet.tokens as WalletToken[]
-      const chain = extractChain({ chains: Object.values(chains), id: Number(wallet.chainId) as any })
-      return {
-        tokens,
-        chain: {
-          name: chain.name,
-          imgUrl: logoAssets.find((l) => l.name === chain.name)
-        }
-      }
+    const chainWallet = userWallets?.wallets.find((w) => w.chainId===params.chainId)
+    const token = (chainWallet?.tokens as WalletToken[]).find((t) => t.symbol===params.symbol)
+    if(!token) throw new HTTPException(404, {message: 'Token not found in asset list'})
+    console.log('Token:::', token)
+
+    // query api for token info
+    const {data, error} = await tryCatch(getCoingeckoTokenIdList())
+    if(error) {
+      console.log('Error:::', error)
+      throw new HTTPException(400, {message: 'Failed to get token ids'})
+    }
+    const id = data.find((d) => d.symbol === token.symbol.toLowerCase() && d.name.includes(token.name))
+    // const ids = data.filter((d) => d.symbol === token.symbol.toLowerCase())
+    console.log('ID', id)
+    // console.log('IDs', ids)
+    return c.json({
+      success: true,
+      message: 'Token info',
+      data: {id}
     })
-    return c.json(assets);
   })
 
 

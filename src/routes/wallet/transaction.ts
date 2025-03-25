@@ -8,6 +8,7 @@ import { getNexusClient, getTransactionEstimate, sendTransaction } from "../../_
 import { transaction as transactionTable } from "../../db/schema";
 import { tryCatch } from "src/_lib/try-catch";
 import { getQuoteAndExecute, TokenSymbol } from "src/_lib/uniswap/swap.route";
+import { WalletToken } from "src/_lib/utils";
 
 const transactionRoute = app.createApp();
 
@@ -40,6 +41,7 @@ transactionRoute.post(
     address: z.string().startsWith('0x'),
     amount: z.number({ coerce: true }),
     chainId: z.number({ coerce: true }),
+    symbol: z.string(),
     memo: z.string().optional().nullable()
   })),
   async (c) => {
@@ -65,10 +67,11 @@ transactionRoute.post(
       .values({
         chainId: chainId.toString(),
         sender: user?.id,
+        type: 'transfer',
+        token: body.symbol,
         network: 'evm',
         receiver: body.address,
         amount: body.amount.toString(),
-        // fee: formatEther(info.callGasLimit, 'wei'),
         feePaidBy: 'EnetWallet'
       }).returning()
 
@@ -102,11 +105,19 @@ transactionRoute.post(
       where: ((tran, { eq }) => eq(tran.id, body.transactionId))
     })
     if (!transaction) throw new HTTPException(404, { message: 'Transaction not found, kindly retry' })
-    const pk = userWithWallet.wallets[0]?.privateKey as Address;
+    const wallet = userWithWallet.wallets.find((w) => w.chainId === transaction.chainId)
+    const token = (wallet?.tokens as WalletToken[]).find((t) => t.symbol===transaction.token)
+    const pk = wallet?.privateKey as Address;
     const chainId = Number(transaction.chainId);
     const nexusClient = await getNexusClient(pk, chainId, true)
 
-    const { data, error } = await tryCatch(sendTransaction(nexusClient, transaction.receiver as Address, parseEther(transaction.amount!, 'wei')))
+    const { data, error } = await tryCatch(sendTransaction(
+      nexusClient,
+      transaction.receiver as Address,
+      parseEther(transaction.amount!, 'wei'),
+      token?.isNative,
+      token?.address as Hex
+    ))
     if (error) {
       await db.update(transactionTable)
         .set({ status: 'failed', token: 'BASE' })
