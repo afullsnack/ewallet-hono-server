@@ -39,5 +39,29 @@ networkRoute.get('/', async (c) => {
 })
 
 
+networkRoute.get(
+  '/receive-tokens',
+  async (c) => {
+    const user = c.get('user')
+    if(!user) throw new HTTPException(404, {message: 'User not found'})
+
+    const userWallets = await getUserWithWallets(user.id)
+
+    const wallets = userWallets?.wallets.map((item) => ({
+      uri: item.chainLogo,
+      chainId: item.chainId,
+      chainName: extractChain({chains: Object.values(chains), id: Number(item.chainId) as any}).name,
+      address: item.address
+    }))
+
+    return c.json({
+      success: true,
+      message: 'Token list fetched',
+      wallets: wallets
+    })
+  }
+)
+
+
 
 export { networkRoute }
