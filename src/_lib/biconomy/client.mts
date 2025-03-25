@@ -61,16 +61,30 @@ export const getTransactionEstimate = async (nexusClient: NexusClient, receiver:
     }
 }
 
-export const sendTransaction = async (nexusClient: NexusClient, receiver: Address, amount: bigint) => {
+export const sendTransaction = async (nexusClient: NexusClient, receiver: Address, amount: bigint, isNative: boolean = true, tokenAddress?: Address) => {
     try {
-        const hash = await nexusClient.sendTransaction({
-            calls: [{to: receiver, value: amount}],
-            // paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
-        });
-        console.log("Transaction hash: ", hash);
-        const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-        console.log("Transaction receipt: ", receipt);
-        return {receiver , hash, receipt};
+        if(isNative) {
+            const hash = await nexusClient.sendTransaction({
+                calls: [{to: receiver, value: amount}],
+                // paymaster: createBicoPaymasterClient({paymasterUrl: paymasterUrl(chainId)}),
+            });
+            console.log("Transaction hash: ", hash);
+            const receipt = await nexusClient.waitForTransactionReceipt({ hash });
+            console.log("Transaction receipt: ", receipt);
+            return {receiver , hash, receipt};
+        } else {
+            const {request} = await nexusClient.account.publicClient.simulateContract({
+                address: tokenAddress!,
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [receiver, amount]
+            })
+            const hash = await nexusClient.account.walletClient.writeContract(request as any)
+            console.log("Transaction hash: ", hash);
+            const receipt = await nexusClient.waitForTransactionReceipt({ hash });
+            console.log("Transaction receipt: ", receipt);
+            return {receiver , hash, receipt};
+        }
     }
     catch (error) {
         console.log(error, ":::error minx");

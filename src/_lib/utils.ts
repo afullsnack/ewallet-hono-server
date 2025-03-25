@@ -266,3 +266,19 @@ export const defaultUSDCTokens = [
     isNative: false
   }
 ] satisfies WalletToken[];
+
+
+
+export const getCoingeckoTokenIdList = async () => {
+  const response = await fetch(`https://api.coingecko.com/api/v3/coins/list`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if(response.ok) {
+    return await response.json() as {id: string;symbol:string;name:string}[];
+  }
+  console.log('Error', response.status, response.statusText)
+  throw new Error(response.statusText ?? 'Failed to fetch id list')
+}
