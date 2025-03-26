@@ -326,7 +326,6 @@ export const getCoingeckoTokenIdList = async () => {
 export const getCoingeckoTokenInfo = async (cgId: string) => {
   const cacheInfo = await redis.get(`${cgId}:info`);
   if(cacheInfo) {
-    console.log('Cache info', cacheInfo)
     return cacheInfo as {
       description: {en:string};
       links: Record<string, any>;
@@ -358,7 +357,6 @@ export const getCoingeckoTokenInfo = async (cgId: string) => {
 export const getCoingeckoTokenPrice = async (cgId: string) => {
   const cacheInfo = await redis.get(`${cgId}:price`);
   if(cacheInfo) {
-    console.log('cache info', cacheInfo)
     return cacheInfo
   }
   

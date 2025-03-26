@@ -176,7 +176,6 @@ const getAssetsInfo = appFactory.createHandlers(
     const chainWallet = userWallets?.wallets.find((w) => w.chainId===params.chainId)
     const token = (chainWallet?.tokens as WalletToken[]).find((t) => t.symbol===params.symbol)
     if(!token) throw new HTTPException(404, {message: 'Token not found in asset list'})
-    console.log('Token:::', token)
 
     const {data, error} = await tryCatch(getCoingeckoTokenInfo(token.cgId))
     if(error) throw new HTTPException(400, {message: 'Could not get token info'})
