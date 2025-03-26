@@ -118,6 +118,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
       // const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
       const user = await getUserWithWallets(account.user.id)
       if (!user) throw new Error('User with wallet not found')
+
       const defaultTokens = defaultNativeTokens.concat(defaultUSDTTokens, defaultUSDCTokens);
 
       for (const w of user.wallets) {
