@@ -3,7 +3,7 @@ import appFactory from "../../app";
 import { createWalletHandler } from "./create";
 import { recoveryRoute } from "./recover";
 import { db, getUserWithWallets, getWalletWithUser } from "../../db";
-import { generateQR, getCoingeckoTokenIdList, WalletToken } from "../../_lib/utils";
+import { generateQR, getCoingeckoTokenIdList, getCoingeckoTokenInfo, getCoingeckoTokenPrice, WalletToken } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
@@ -96,11 +96,16 @@ const getUserAssets = appFactory.createHandlers(async (c) => {
   })[] = [];
   if (user?.wallets.length) {
     for (const wallet of user.wallets) {
+      console.log('Wallet:::', wallet)
       const nexusClient = await getNexusClient(wallet.privateKey! as Hex, Number(wallet.chainId), false)
       if (wallet.tokens) {
         const tokens = wallet.tokens as WalletToken[]
         let balance: number = 0;
         for (const token of tokens) {
+          const {data:price, error:priceError} = await tryCatch(getCoingeckoTokenPrice(token.cgId))
+          if(priceError) {
+            console.log('Price error', priceError)
+          }
           if (token.isNative) {
             const { data, error } = await tryCatch(getBalance(nexusClient, wallet?.address! as Address))
             // TODO: get price as well
@@ -113,7 +118,7 @@ const getUserAssets = appFactory.createHandlers(async (c) => {
             assets.push({
               ...token,
               balance: data,
-              usdBalance: data * 1920,
+              usdBalance: data * Number((price as any)[token.cgId]?.usd),
               chainName: nexusClient.account.chain?.name,
               chainUrl: wallet.chainLogo ?? '',
               tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
@@ -133,7 +138,7 @@ const getUserAssets = appFactory.createHandlers(async (c) => {
             assets.push({
               ...token,
               balance: data,
-              usdBalance: data * 1920,
+              usdBalance: data * Number((price as any)[token.cgId]?.usd),
               chainName: nexusClient.account.chain?.name,
               chainUrl: wallet.chainLogo ?? '',
               tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
@@ -173,11 +178,25 @@ const getAssetsInfo = appFactory.createHandlers(
     if(!token) throw new HTTPException(404, {message: 'Token not found in asset list'})
     console.log('Token:::', token)
 
-    
+    const {data, error} = await tryCatch(getCoingeckoTokenInfo(token.cgId))
+    if(error) throw new HTTPException(400, {message: 'Could not get token info'})
+
+    const {data:price, error:priceError} = await tryCatch(getCoingeckoTokenPrice(token.cgId))
+    if(priceError) {
+      console.log('Price error', priceError)
+    }
+    const activities = await db.query.transaction.findMany({
+      where: ((trans, {eq, or}) => or(eq(trans.sender, user.id), eq(trans.userId, user.id)))
+    })
+
     return c.json({
       success: true,
       message: 'Token info',
-      data: {}
+      data: {
+        price: (price as Record<string, any>)[token.cgId]?.usd,
+        activities,
+        info: data
+      }
     })
   })
 

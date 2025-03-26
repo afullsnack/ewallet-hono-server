@@ -1,4 +1,4 @@
-import {Redis} from 'ioredis';
+import {Redis} from '@upstash/redis';
 
 class RedisCache {
     private static instance: Redis | null = null;
@@ -11,26 +11,27 @@ class RedisCache {
     }
 
     public static getInstance(): Redis {
-        if (!RedisCache.instance) {
+        if (!RedisCache.instance || !RedisCache.isInitialized) {
             try {
-                const redisUrl = process.env.REDIS_CONNECTION_URL;
+                const redisUrl = process.env.REDIS_URL;
+                const redisToken = process.env.REDIS_TOKEN;
                 if (!redisUrl) {
                     throw new Error('Redis connection URL is not defined in environment variables');
                 }
-                RedisCache.instance = new Redis(redisUrl, {
-                    retryStrategy: (times: number) => {
-                        return Math.min(times * 50, 2000);
-                    },
-                    maxRetriesPerRequest: 3,
-                    enableReadyCheck: true,
+                RedisCache.instance = new Redis({
+                   url: redisUrl,
+                   token: redisToken
                 });
-                RedisCache.instance.on('error', (error: Error) => {
-                    console.error('Redis connection error:', error);
-                });
-                RedisCache.instance.on('connect', () => {
-                    console.log('Successfully connected to Redis');
-                    RedisCache.isInitialized = true;
-                });
+                // RedisCache.instance.on('error', (error: Error) => {
+                //     console.error('Redis connection error:', error);
+                // });
+                // RedisCache.instance.on('end', ()=>{
+                //     console.log('Ended connection...')
+                // })
+                // RedisCache.instance.on('connect', () => {
+                //     console.log('Successfully connected to Redis');
+                //     RedisCache.isInitialized = true;
+                // });
             }
             catch (error) {
                 console.error('Failed to initialize Redis connection:', error);
@@ -42,8 +43,8 @@ class RedisCache {
     }
 
     public static async closeConnection(): Promise<void> {
+        console.log('Close called')
         if (RedisCache.instance) {
-            await RedisCache.instance.quit();
             RedisCache.instance = null;
             RedisCache.isInitialized = false;
         }

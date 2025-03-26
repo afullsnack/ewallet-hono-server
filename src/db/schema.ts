@@ -76,6 +76,7 @@ export const transaction = pgTable('transaction', {
   type: text({enum: transactionType}).default('transfer'),
   status: text('status', { enum: transactionStatus}).notNull().default('initiated'),
   hash: text(),
+  userId: text().references(() => user.id),
   sender: text().references(() => user.id),
   receiver: text(),
   fee: text(),

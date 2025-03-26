@@ -30,7 +30,7 @@ transactionRoute.get('/', zValidator('header', z.object({id: z.string().optional
   return c.json({
     success: true,
     message: 'Transaction retrieved',
-    transactions
+    transaction: transactions[0]
   })
 })
 
@@ -47,10 +47,10 @@ transactionRoute.post(
   async (c) => {
     const body = c.req.valid('json')
     const user = c.get('user')
-
+    if(!user) throw new HTTPException(404, {message: 'User not found'})
     console.log(body, ":::init body")
 
-    if (body.chainId !== 84532) throw new HTTPException(400, { message: 'Bad transaction request, chain ID not supported' })
+    // if (body.chainId !== 84532) throw new HTTPException(400, { message: 'Bad transaction request, chain ID not supported' })
     if (body.amount <= 0) throw new HTTPException(400, { message: 'Amount must be greater than 0' })
     if (!isAddress(body.address)) throw new HTTPException(400, { message: 'Address is not valid' })
 
@@ -72,7 +72,8 @@ transactionRoute.post(
         network: 'evm',
         receiver: body.address,
         amount: body.amount.toString(),
-        feePaidBy: 'EnetWallet'
+        userId: user.id,
+        feePaidBy: (body.chainId !== 84532 || body.chainId !== 8453)? 'User' : 'EnetWallet'
       }).returning()
 
     const gasFeeEstimate = Number(formatEther(info.callGasLimit, 'wei'))*Number(formatEther(info.maxPriorityFeePerGas, 'wei'))
@@ -120,7 +121,7 @@ transactionRoute.post(
     ))
     if (error) {
       await db.update(transactionTable)
-        .set({ status: 'failed', token: 'BASE' })
+        .set({ status: 'failed' })
         .returning()
 
       throw new HTTPException(500, { message: 'Transaction failed' })
@@ -128,7 +129,7 @@ transactionRoute.post(
 
     const { hash, receiver, receipt } = data;
     const [updatedTx] = await db.update(transactionTable)
-      .set({ hash, status: 'complete', token: 'BASE', fee: formatEther(receipt?.cumulativeGasUsed * receipt.effectiveGasPrice, 'wei') })
+      .set({ hash, status: 'complete', fee: formatEther(receipt?.cumulativeGasUsed * receipt.effectiveGasPrice, 'wei') })
       .returning()
 
     return c.json({

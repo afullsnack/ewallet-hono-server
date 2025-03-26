@@ -13,8 +13,10 @@ import {
 } from "@biconomy/abstractjs";
 
 
-const baseSepoliaPaymasterUrl = `https://paymaster.biconomy.io/api/v2/84532/HJ4A-yoIU.590fc68b-f046-42db-b7b5-9279e73849d4`;
-const baseMainnetPaymasterUrl = `https://paymaster.biconomy.io/api/v2/8453/7eH0H99xI.d370d528-6c6e-4089-b646-8947dc387657`
+const paymasterUrl = {
+    [chains.base.id]: `https://paymaster.biconomy.io/api/v2/8453/7eH0H99xI.d370d528-6c6e-4089-b646-8947dc387657`,
+    [chains.baseSepolia.id]: `https://paymaster.biconomy.io/api/v2/84532/HJ4A-yoIU.590fc68b-f046-42db-b7b5-9279e73849d4`
+}
 const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api/v3/${chainId}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
 const bundlerUrlMainnet = (chainId: number) => `https://bundler.biconomy.io/api/v3/${chainId}/0107498c-14fb-4739-b607-c913343474b1`
 
@@ -25,9 +27,10 @@ const ankrRPCUrls = {
 
 // return biconomy nexus client with or without paymaster
 export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, withPM: boolean = false) => {
+    console.log('Chain id', chainId)
     const account = privateKeyToAccount(privateKey)
     const chain = extractChain({chains: Object.values(chains) as chains.Chain[], id: chainId})
-    const isMainnet = !!chain.testnet
+    const isMainnet = !chain.testnet
     const nexusClient = createSmartAccountClient({
         account: await toNexusAccount({
             signer: account,
@@ -35,11 +38,13 @@ export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, w
             transport: http((chainId === 56 || chainId === 97)? ankrRPCUrls[chainId] : undefined),
         }),
         transport: http(isMainnet? bundlerUrlMainnet(chainId) : bundlerUrl(chainId)),
-        paymaster: withPM? createBicoPaymasterClient({paymasterUrl: isMainnet? baseMainnetPaymasterUrl : baseSepoliaPaymasterUrl}) : undefined,
+        paymaster: (withPM && paymasterUrl[chain.id]) ? createBicoPaymasterClient({paymasterUrl: paymasterUrl[chain.id]}) : undefined,
     });
 
     const address = nexusClient.account?.address!;
-    console.log("smart accounts address", address)
+    console.log("smart accounts address", address);
+    console.log("Paymaster URL", nexusClient.paymaster)
+    console.log('IsMainnet', isMainnet)
     return nexusClient;
 }
 

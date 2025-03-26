@@ -13,6 +13,7 @@ import {
   bscTestnet
 } from "viem/chains"
 import { extractChain } from "viem";
+import redis from "./cache/redis";
 
 export const generateQR = async (value: string) => {
   const { data: dataUrl, error } = await tryCatch(
@@ -323,19 +324,54 @@ export const getCoingeckoTokenIdList = async () => {
 }
 
 export const getCoingeckoTokenInfo = async (cgId: string) => {
-  const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}?market_data=true&developer_data=false&community_data=false&tickers=true`, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-  if(response.ok) {
-    return await response.json() as {
+  const cacheInfo = await redis.get(`${cgId}:info`);
+  if(cacheInfo) {
+    console.log('Cache info', cacheInfo)
+    return cacheInfo as {
       description: {en:string};
       links: Record<string, any>;
       image: Record<'thumb'|'small'|'large', string>;
       market_cap_rank: number;
       market_data: any
     }
+  }
+  const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}?market_data=true&developer_data=false&community_data=false&tickers=true`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  if(response.ok) {
+    const data = await response.json() as {
+      description: {en:string};
+      links: Record<string, any>;
+      image: Record<'thumb'|'small'|'large', string>;
+      market_cap_rank: number;
+      contract_address: string;
+      market_data: any
+    }
+    await redis.set(`${cgId}:info`, JSON.stringify(data), {ex: 60*60})
+    return data;
+  }
+  console.log('Error', response.status, response.statusText)
+  throw new Error(response.statusText ?? 'Failed to fetch id list')
+}
+export const getCoingeckoTokenPrice = async (cgId: string) => {
+  const cacheInfo = await redis.get(`${cgId}:price`);
+  if(cacheInfo) {
+    console.log('cache info', cacheInfo)
+    return cacheInfo
+  }
+  
+  const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${cgId}`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  if(response.ok) {
+    const data = await response.json()
+    await redis.set(`${cgId}:price`, JSON.stringify(data), {ex: 60*60})
+    await new Promise((resolve) => setTimeout(resolve, 10000))
+    return data;
   }
   console.log('Error', response.status, response.statusText)
   throw new Error(response.statusText ?? 'Failed to fetch id list')

@@ -14,6 +14,7 @@ import { recoveryRequestTable } from "src/db/schema";
 import { CryptoUtil } from "src/_lib/helpers/hasher";
 import { eq } from "drizzle-orm";
 import { defaultChainIds } from "../../_lib/utils";
+import { tryCatch } from "src/_lib/try-catch";
 
 
 export const recoveryRoute = appFactory.createApp();
@@ -136,7 +137,8 @@ recoveryRoute.post(
       throw new HTTPException(401, {message: 'Password is invalid or incorrect'})
     }
 
-    const mnemonic = CryptoUtil.decrypt(evmMnemonic, body.password)
+    const {data, error} = await tryCatch(new Promise((resolve) => resolve(CryptoUtil.decrypt(evmMnemonic, body.password))));
+    const mnemonic = error? evmMnemonic : data as string;
     console.log(mnemonic, ":::decrypted pnemonic")
     // const backup = Buffer.from(recoverReq.keyData!);
     // console.log(backup, ":::backup buffer")
@@ -146,7 +148,7 @@ recoveryRoute.post(
       backupShare: recoverReq.keyData!,
       password: body.password,
       walletId: evmWalletId,
-      mnemonic
+      mnemonic,
     })
     logger.info("Recovery data:::", recovery)
 

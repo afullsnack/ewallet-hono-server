@@ -3,9 +3,7 @@ import { createHDAccounts } from "../helpers/wallet";
 import bip39 from "bip39";
 import { CryptoUtil } from "../helpers/hasher";
 import { KeyManager } from "../key-manager/key-manager.service";
-import { addWalletToUser, db, getUserWithWallets, getWalletWithUser, updateUser, updateWallet } from "../../db";
-import { privateKeyToAddress } from "viem/accounts";
-import { Address, ChainDoesNotSupportContract, Hex } from "viem";
+import { addWalletToUser, db, getUserWithWallets, getWalletWithUser } from "../../db";
 import { getNexusClient } from "../biconomy/client.mts";
 import { chainLogos, defaultChainIds, defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "../utils";
 import { wallet } from "src/db/schema";
@@ -127,13 +125,15 @@ export class EVMChainStrategy extends BaseChainStrategy {
         }
       }
 
+      const encryptedMnemonic = CryptoUtil.encrypt(params.mnemonic, params.password)
+
       const addWalletsPromises = defaultChainIds.map(async (id) => {
         const wallet = user.wallets.find((w) => w.chainId === id.toString());
         if (wallet) {
           return undefined;
         }
         return await addWalletToUser({
-          mnemonic: params.mnemonic, // enecrypt with password as well
+          mnemonic: encryptedMnemonic, // enecrypt with password as well
           network: this.networkSlug as any,
           address: smartAddress,
           // ...account,
