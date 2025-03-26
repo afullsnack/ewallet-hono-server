@@ -173,20 +173,11 @@ const getAssetsInfo = appFactory.createHandlers(
     if(!token) throw new HTTPException(404, {message: 'Token not found in asset list'})
     console.log('Token:::', token)
 
-    // query api for token info
-    const {data, error} = await tryCatch(getCoingeckoTokenIdList())
-    if(error) {
-      console.log('Error:::', error)
-      throw new HTTPException(400, {message: 'Failed to get token ids'})
-    }
-    const id = data.find((d) => d.symbol === token.symbol.toLowerCase() && d.name.includes(token.name))
-    // const ids = data.filter((d) => d.symbol === token.symbol.toLowerCase())
-    console.log('ID', id)
-    // console.log('IDs', ids)
+    
     return c.json({
       success: true,
       message: 'Token info',
-      data: {id}
+      data: {}
     })
   })
 
@@ -221,6 +212,13 @@ const addTokenHandler = appFactory.createHandlers(
         message: 'Token already in wallet'
       })
     }
+    // query api for token info
+    const {data, error} = await tryCatch(getCoingeckoTokenIdList())
+    if(error) {
+      console.log('Error:::', error)
+      throw new HTTPException(400, {message: 'Failed to get token ids'})
+    }
+    const id = data.find((d) => d.symbol===body.symbol.toLowerCase() && d.name===body.name)?.id ?? '';
 
     tokens.push({
       address: body.address,
@@ -230,6 +228,7 @@ const addTokenHandler = appFactory.createHandlers(
       chain: Number(params.chainId),
       isTracked: true,
       isNative: false,
+      cgId: id
     })
     const [updatedWalletTokens] = await db.update(wallet).set({
       tokens: tokens
@@ -243,9 +242,6 @@ const addTokenHandler = appFactory.createHandlers(
 )
 
 const updateTokenHandler = appFactory.createHandlers(
-  // zValidator('param', z.object({
-  //   chainId: z.string().min(3),
-  // })),
   zValidator('json', z.object({
     address: z.string().optional().nullable(),
     isNative: z.boolean().default(true),
