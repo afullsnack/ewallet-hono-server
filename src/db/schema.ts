@@ -3,7 +3,7 @@ import { customType, pgTable, text, boolean, json, timestamp } from "drizzle-orm
 import { defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "src/_lib/utils";
 import { v4 as uuidv4 } from "uuid";
 
-// TODO: move to network domain
+/// TODO: split file into various schema files with handlers/repo files on the same level
 const supportedNetworks = [
   'evm',
   'btc',
@@ -66,6 +66,24 @@ export const wallet = pgTable('wallets', {
   recoveryPassword: text(),
   createdAt: timestamp('created_at', { mode: 'string', withTimezone: false }).defaultNow().notNull(),
 });
+
+// keypairs table
+export const keypair = pgTable('keypair', {
+  id: tableId(),
+  walletId: text('wallet_id').notNull().references(() => wallet.id, {onDelete: 'cascade'}),
+  privateKey: text(),
+  forNetwork: text('network', { enum: supportedNetworks }),
+  shareA: text(),
+  shareB: text(),
+  sharec: text(),
+  address: text(),
+  mnemonic: text().notNull(),
+  createdAt: timestamp('created_at', {mode: 'date', withTimezone: false }).defaultNow().notNull(),
+})
+
+export const tokens = pgTable('tokens', {
+  id: tableId(),
+})
 
 export const transaction = pgTable('transaction', {
   id: tableId(),
@@ -141,11 +159,12 @@ export const userRelations = relations(user, ({ many }) => ({
   wallets: many(wallet),
 }));
 
-export const walletRelation = relations(wallet, ({ one }) => ({
+export const walletRelation = relations(wallet, ({ one, many }) => ({
   user: one(user, {
     fields: [wallet.userId],
     references: [user.id],
-  })
+  }),
+  keypairs: many(keypair)
 }));
 
 export const guardRequestRelations = relations(guardRequestTable, ({ one }) => ({
