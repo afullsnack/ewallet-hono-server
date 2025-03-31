@@ -3,7 +3,7 @@ import * as schema from './schema';
 import { eq } from "drizzle-orm";
 
 // NOTE: Add schema to drizzle initialization so table types are available for repo functions
-const db = drizzle(process.env.POSTGRES_DB_DEV_URL!, { schema });
+const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
