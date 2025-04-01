@@ -91,7 +91,7 @@ guardian.post(
       response = {
         success: true,
         message: 'Guardian found',
-        address: user.wallets.find((w) => w.network === 'evm')?.address ?? 'not-created'
+        address: user.wallets.find((w) => w.network === 'evm')?.address ?? null
       }
     }
 
