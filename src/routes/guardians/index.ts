@@ -6,12 +6,29 @@ import { db, getUserWithWallets } from "src/db";
 
 const guardianRoute = appFactory.createApp();
 
-// return list of guardians for user
+// TODO: return list of user guardians and guarding requests
 guardianRoute.get('/', async (c) => {
   const user = c.get('user')
   if(!user) throw new HTTPException(401, {message: 'You are not authorised to access this route'})
 
-  const userReq = await getUserWithWallets(user.id)
+
+  const guardians = db.query.guardRequestTable.findMany({
+    where: ((guard, {eq}) => eq(guard.requestorId, user.id))
+  })
+
+  console.log('Guardians:::', guardians)
+
+  const response = {
+    success: true,
+    message: 'Guardians and guarding retrieved',
+    data: {
+      guardians: {},
+      guarding: {}
+    }
+  }
+  return c.json({
+    
+  })
 })
 
 guardianRoute.route('/create', guardianCreation);
