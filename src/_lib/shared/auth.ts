@@ -33,6 +33,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     'ewallet://',
-    'exp://192.168.1.37:8081/--'
+    'exp://192.168.1.37:8081/--',
+    'exp://192.168.1.38:8081/--'
   ]
 });

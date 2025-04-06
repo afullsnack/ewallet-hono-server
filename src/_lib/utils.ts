@@ -14,6 +14,7 @@ import {
 } from "viem/chains"
 import { extractChain } from "viem";
 import redis from "./cache/redis";
+import cron from "node-cron"
 
 export const generateQR = async (value: string) => {
   const { data: dataUrl, error } = await tryCatch(
@@ -79,23 +80,23 @@ export const defaultNativeTokens: WalletToken[] = defaultChainIds.map((id) => {
   })
 
   const getCgId = (chainId: any) => {
-    if(chainId === bsc.id || chainId===bscTestnet.id){
+    if (chainId === bsc.id || chainId === bscTestnet.id) {
       return 'binancecoin'
     }
-    if(chainId===polygon.id || chainId===polygonAmoy.id){
+    if (chainId === polygon.id || chainId === polygonAmoy.id) {
       return 'matic-network'
     }
-    if(chainId===arbitrum.id || chainId===arbitrumSepolia.id){
+    if (chainId === arbitrum.id || chainId === arbitrumSepolia.id) {
       return 'ethereum'
     }
-    if(chainId===mainnet.id || chainId===sepolia.id){
+    if (chainId === mainnet.id || chainId === sepolia.id) {
       return 'ethereum'
     }
-    if(chainId===base.id || chainId===baseSepolia.id){
+    if (chainId === base.id || chainId === baseSepolia.id) {
       return 'l2-standard-bridged-weth-base'
     }
   }
-  
+
   return {
     ...chain.nativeCurrency,
     chain: id,
@@ -316,22 +317,26 @@ export const getCoingeckoTokenIdList = async () => {
     }
   })
 
-  if(response.ok) {
-    return await response.json() as {id: string;symbol:string;name:string}[];
+  if (response.ok) {
+    return await response.json() as { id: string; symbol: string; name: string }[];
   }
   console.log('Error', response.status, response.statusText)
   throw new Error(response.statusText ?? 'Failed to fetch id list')
 }
 
-export const getCoingeckoTokenInfo = async (cgId: string) => {
-  const cacheInfo = await redis.get(`${cgId}:info`);
-  if(cacheInfo) {
-    return cacheInfo as {
-      description: {en:string};
-      links: Record<string, any>;
-      image: Record<'thumb'|'small'|'large', string>;
-      market_cap_rank: number;
-      market_data: any
+export const getCoingeckoTokenInfo = async (cgId: string, invalidate: boolean = false) => {
+  if (!invalidate) {
+    console.log('Cache hit invalidate', invalidate)
+    const cacheInfo = await redis.get(`${cgId}:info`);
+    if (cacheInfo) {
+      console.log('Cache hit')
+      return cacheInfo as {
+        description: { en: string };
+        links: Record<string, any>;
+        image: Record<'thumb' | 'small' | 'large', string>;
+        market_cap_rank: number;
+        market_data: any
+      }
     }
   }
   const response = await fetch(`https://api.coingecko.com/api/v3/coins/${cgId}?market_data=true&developer_data=false&community_data=false&tickers=true`, {
@@ -339,16 +344,17 @@ export const getCoingeckoTokenInfo = async (cgId: string) => {
       'Content-Type': 'application/json'
     }
   })
-  if(response.ok) {
+  if (response.ok) {
     const data = await response.json() as {
-      description: {en:string};
+      description: { en: string };
       links: Record<string, any>;
-      image: Record<'thumb'|'small'|'large', string>;
+      image: Record<'thumb' | 'small' | 'large', string>;
       market_cap_rank: number;
       contract_address: string;
       market_data: any
     }
-    await redis.set(`${cgId}:info`, JSON.stringify(data), {ex: 60*60})
+    await redis.set(`${cgId}:info`, JSON.stringify(data), { ex: 8 * 60 * 60 })
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     return data;
   }
   console.log('Error', response.status, response.statusText)
@@ -356,21 +362,78 @@ export const getCoingeckoTokenInfo = async (cgId: string) => {
 }
 export const getCoingeckoTokenPrice = async (cgId: string) => {
   const cacheInfo = await redis.get(`${cgId}:price`);
-  if(cacheInfo) {
+  if (cacheInfo) {
     return cacheInfo
   }
-  
+
   const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${cgId}`, {
     headers: {
       'Content-Type': 'application/json'
     }
   })
-  if(response.ok) {
+  if (response.ok) {
     const data = await response.json()
-    await redis.set(`${cgId}:price`, JSON.stringify(data), {ex: 60*60})
-    await new Promise((resolve) => setTimeout(resolve, 10000))
+    await redis.set(`${cgId}:price`, JSON.stringify(data), { ex: 3 * 60 * 60 })
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     return data;
   }
   console.log('Error', response.status, response.statusText)
   throw new Error(response.statusText ?? 'Failed to fetch id list')
 }
+
+export const getCoingeckoMarketData = async (cgIds: string[]) => {
+  const cacheInfo = await redis.get(`market-data`);
+  if (cacheInfo) {
+    return cacheInfo
+  }
+
+  const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cgIds.join(',')}&order=market_cap_desc`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  if (response.ok) {
+    const data = await response.json()
+    await redis.set(`market-data`, JSON.stringify(data), { ex: 8 * 60 * 60 })
+    return data;
+  }
+  console.log('Error', response.status, response.statusText)
+  throw new Error(response.statusText ?? 'Failed to fetch id list')
+}
+
+
+export const scheduleInfoFetch = () => {
+  const cgIds = [
+    'binancecoin',
+    'matic-network',
+    'ethereum',
+    'l2-standard-bridged-weth-base',
+    'usd-coin',
+    'tether'
+  ]
+  cron.schedule('*/2 * * * *', async () => {
+    console.log('running a task every minute 1-5');
+    for (const id of cgIds) {
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${id}?market_data=true&developer_data=false&community_data=false&tickers=true`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (response.ok) {
+        const data = await response.json() as {
+          description: { en: string };
+          links: Record<string, any>;
+          image: Record<'thumb' | 'small' | 'large', string>;
+          market_cap_rank: number;
+          contract_address: string;
+          market_data: any
+        }
+        await redis.set(`${id}:info`, JSON.stringify(data), { ex: 8 * 60 * 60 })
+        console.log('fetched data', response.status)
+        await new Promise((resolve) => setTimeout(resolve, 10000))
+        continue;
+      }
+      console.log('Error', response.status, response.statusText)
+    }
+  });
+} 

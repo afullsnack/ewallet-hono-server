@@ -3,14 +3,14 @@ import appFactory from "../../app";
 import { createWalletHandler } from "./create";
 import { recoveryRoute } from "./recover";
 import { db, getUserWithWallets, getWalletWithUser } from "../../db";
-import { generateQR, getCoingeckoTokenIdList, getCoingeckoTokenInfo, getCoingeckoTokenPrice, WalletToken } from "../../_lib/utils";
+import { generateQR, getCoingeckoMarketData, getCoingeckoTokenIdList, getCoingeckoTokenInfo, getCoingeckoTokenPrice, WalletToken } from "../../_lib/utils";
 import { wallet } from "../../db/schema";
 import { tryCatch } from "../../_lib/try-catch";
 import { transactionRoute } from "./transaction";
 import { networkRoute } from "./network"
 import { getBalance, getNexusClient, getNonNativeBalance, getTokenData } from "../../_lib/biconomy/client.mts";
 import { logger } from "../../middlewares/logger";
-import { Address, extractChain, Hex, isAddress } from "viem";
+import { AbiErrorInputsNotFoundError, Address, extractChain, Hex, isAddress } from "viem";
 import { zValidator } from "@hono/zod-validator";
 import { z } from 'zod';
 import * as chains from "viem/chains";
@@ -78,84 +78,115 @@ const backupWallet = appFactory.createHandlers(async (c) => {
   })
 })
 
-const getUserAssets = appFactory.createHandlers(async (c) => {
-  const session = c.get('session');
+const getUserAssets = appFactory.createHandlers(
+  async (c) => {
+  try {
+    const session = c.get('session');
 
-  if (!session) {
-    throw new HTTPException(404, { message: 'User session not found' });
-  }
-  const user = await getUserWithWallets(session.userId)
-  if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
+    if (!session) {
+      throw new HTTPException(404, { message: 'User session not found' });
+    }
+    const user = await getUserWithWallets(session.userId)
+    if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
-  const assets: (WalletToken & {
-    balance: number,
-    usdBalance: number;
-    chainName: string;
-    chainUrl: string;
-    tokenUrl: string;
-  })[] = [];
-  if (user?.wallets.length) {
-    for (const wallet of user.wallets) {
-      console.log('Wallet:::', wallet)
-      const nexusClient = await getNexusClient(wallet.privateKey! as Hex, Number(wallet.chainId), false)
-      if (wallet.tokens) {
-        const tokens = wallet.tokens as WalletToken[]
-        let balance: number = 0;
-        for (const token of tokens) {
-          const {data:price, error:priceError} = await tryCatch(getCoingeckoTokenPrice(token.cgId))
-          if(priceError) {
-            console.log('Price error', priceError)
+    const assets: (WalletToken & {
+      balance: number,
+      pnl24H: number;
+      percentPnL24H: number;
+      usdBalance: number;
+      chainName: string;
+      chainUrl: string;
+      tokenUrl: string;
+    })[] = [];
+    if (user?.wallets.length) {
+      for (const wallet of user.wallets) {
+        const nexusClient = await getNexusClient(wallet.privateKey! as Hex, Number(wallet.chainId), false)
+        if (wallet.tokens) {
+          const tokens = wallet.tokens as WalletToken[]
+          let balance: number = 0;
+          for (const token of tokens) {
+            // const { data: price, error: priceError } = await tryCatch(getCoingeckoTokenPrice(token.cgId))
+            // if (priceError) {
+            //   console.log('Price error', priceError)
+            // }
+            const {data: infoData, error: infoError} = await tryCatch(getCoingeckoTokenInfo(token.cgId))
+            if (infoError) {
+              console.log('Price error', infoError)
+              throw new HTTPException(500, {message: infoError.message ?? 'Error getting token info'})
+            }
+            const tokenPrice24hAgo = infoData?.market_data?.current_price?.usd - infoData?.market_data?.price_change_24h;
+            if (token.isNative) {
+              const { data, error } = await tryCatch(getBalance(nexusClient, wallet?.address! as Address))
+              // TODO: get price as well
+              if (error) {
+                logger.error(error)
+                throw new Error('Failed to get balances')
+              }
+              logger.info(`Balance on ${wallet.chainId}:::${data}`)
+              if (data) balance += data;
+              const currentAssetBalance = data * Number(infoData?.market_data?.current_price?.usd);
+              const assetUSDBalance24hAgo = data * tokenPrice24hAgo
+              const pnl = currentAssetBalance-assetUSDBalance24hAgo
+              const pnlPercent = (pnl/currentAssetBalance)*100
+              console.log('Percent PnL', (pnl/currentAssetBalance)*100, pnl, currentAssetBalance)
+              assets.push({
+                ...token,
+                balance: data,
+                pnl24H: pnl,
+                percentPnL24H: Number.isNaN(pnlPercent)? 0 : pnlPercent,
+                usdBalance: currentAssetBalance,
+                chainName: nexusClient.account.chain?.name,
+                chainUrl: wallet.chainLogo ?? '',
+                tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
+              })
+            } else {
+              // and price
+              if (token.address && !isAddress(token.address)) {
+                throw new Error('Token address is invalid')
+              }
+              const { data, error } = await tryCatch(getNonNativeBalance(nexusClient, token.address as Address, wallet.address as Address))
+              if (error) {
+                logger.error('Error:::', error)
+                throw new Error('Failed to get non-native balances')
+              }
+              logger.info(`Balance on ${wallet.chainId}:::${data}`)
+              if (data) balance += data
+              const currentAssetBalance = data * Number(infoData?.market_data?.current_price?.usd);
+              const assetUSDBalance24hAgo = data * tokenPrice24hAgo
+              const pnl = currentAssetBalance-assetUSDBalance24hAgo
+              const pnlPercent = (pnl/currentAssetBalance)*100
+              console.log('Percent PnL', (pnl/currentAssetBalance)*100, pnl, currentAssetBalance)
+              assets.push({
+                ...token,
+                balance: data,
+                pnl24H: pnl,
+                percentPnL24H: Number.isNaN(pnlPercent)? 0 : pnlPercent,
+                usdBalance: currentAssetBalance,
+                chainName: nexusClient.account.chain?.name,
+                chainUrl: wallet.chainLogo ?? '',
+                tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
+              })
+            }
           }
-          if (token.isNative) {
-            const { data, error } = await tryCatch(getBalance(nexusClient, wallet?.address! as Address))
-            // TODO: get price as well
-            if (error) {
-              logger.error(error)
-              throw new Error('Failed to get balances')
-            }
-            logger.info(`Balance on ${wallet.chainId}:::${data}`)
-            if (data) balance += data;
-            assets.push({
-              ...token,
-              balance: data,
-              usdBalance: data * Number((price as any)[token.cgId]?.usd),
-              chainName: nexusClient.account.chain?.name,
-              chainUrl: wallet.chainLogo ?? '',
-              tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
-            })
-          } else {
-            // and price
-            if (token.address && !isAddress(token.address)) {
-              throw new Error('Token address is invalid')
-            }
-            const { data, error } = await tryCatch(getNonNativeBalance(nexusClient, token.address as Address, wallet.address as Address))
-            if (error) {
-              logger.error('Error:::', error)
-              throw new Error('Failed to get non-native balances')
-            }
-            logger.info(`Balance on ${wallet.chainId}:::${data}`)
-            if (data) balance += data
-            assets.push({
-              ...token,
-              balance: data,
-              usdBalance: data * Number((price as any)[token.cgId]?.usd),
-              chainName: nexusClient.account.chain?.name,
-              chainUrl: wallet.chainLogo ?? '',
-              tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
-            })
-          }
+          // logger.info(assets, 'Assets:::',)
         }
-        // logger.info(assets, 'Assets:::',)
       }
     }
-  }
 
-  const totalUsdBalance = assets.reduce((pre, cur) => pre + cur.usdBalance, 0)
-  return c.json({
-    balance: totalUsdBalance,
-    assets,
-    network: 'USD'
-  }, 200)
+    const totalUsdBalance = assets.reduce((pre, cur) => pre + cur.usdBalance, 0)
+    const totalPnL24h = assets.reduce((pre, curr) => pre+curr.pnl24H, 0)
+    const totalPercentagePnL24h = (totalPnL24h/totalUsdBalance)*100
+    return c.json({
+      balance: totalUsdBalance,
+      totalPnL24h,
+      totalPercentagePnL24h,
+      assets,
+      network: 'USD'
+    }, 200)
+  }
+  catch (error: any) {
+    console.log('Get Assets:::', error)
+  }
 })
 
 
@@ -171,21 +202,21 @@ const getAssetsInfo = appFactory.createHandlers(
     console.log('Params:::', params);
     // return all tokens in wallet table for users
     const userWallets = await getUserWithWallets(user?.id!)
-    if(!userWallets) throw new HTTPException(404, {message: 'Wallet not found'})
+    if (!userWallets) throw new HTTPException(404, { message: 'Wallet not found' })
 
-    const chainWallet = userWallets?.wallets.find((w) => w.chainId===params.chainId)
-    const token = (chainWallet?.tokens as WalletToken[]).find((t) => t.symbol===params.symbol)
-    if(!token) throw new HTTPException(404, {message: 'Token not found in asset list'})
+    const chainWallet = userWallets?.wallets.find((w) => w.chainId === params.chainId)
+    const token = (chainWallet?.tokens as WalletToken[]).find((t) => t.symbol === params.symbol)
+    if (!token) throw new HTTPException(404, { message: 'Token not found in asset list' })
 
-    const {data, error} = await tryCatch(getCoingeckoTokenInfo(token.cgId))
-    if(error) throw new HTTPException(400, {message: 'Could not get token info'})
+    const { data, error } = await tryCatch(getCoingeckoTokenInfo(token.cgId))
+    if (error) throw new HTTPException(400, { message: 'Could not get token info' })
 
-    const {data:price, error:priceError} = await tryCatch(getCoingeckoTokenPrice(token.cgId))
-    if(priceError) {
+    const { data: price, error: priceError } = await tryCatch(getCoingeckoTokenPrice(token.cgId))
+    if (priceError) {
       console.log('Price error', priceError)
     }
     const activities = await db.query.transaction.findMany({
-      where: ((trans, {eq, or}) => or(eq(trans.sender, user.id), eq(trans.userId, user.id)))
+      where: ((trans, { eq, and, or }) => and(eq(trans.token, token.symbol), or(eq(trans.sender, user.id), eq(trans.userId, user.id))))
     })
 
     return c.json({
@@ -231,12 +262,12 @@ const addTokenHandler = appFactory.createHandlers(
       })
     }
     // query api for token info
-    const {data, error} = await tryCatch(getCoingeckoTokenIdList())
-    if(error) {
+    const { data, error } = await tryCatch(getCoingeckoTokenIdList())
+    if (error) {
       console.log('Error:::', error)
-      throw new HTTPException(400, {message: 'Failed to get token ids'})
+      throw new HTTPException(400, { message: 'Failed to get token ids' })
     }
-    const id = data.find((d) => d.symbol===body.symbol.toLowerCase() && d.name===body.name)?.id ?? '';
+    const id = data.find((d) => d.symbol === body.symbol.toLowerCase() && d.name === body.name)?.id ?? '';
 
     tokens.push({
       address: body.address,
@@ -333,6 +364,37 @@ const checkTokenAddress = appFactory.createHandlers(
   }
 )
 
+const getMarketDataHandler = appFactory.createHandlers(
+  async (c) => {
+    try {
+      const {data, error} = await tryCatch(getCoingeckoMarketData([
+        'bitcoin',
+        'ethereum',
+        'tether',
+        'ripple',
+        'binancecoin',
+        'solana',
+        'usd-coin',
+        'dogecoin',
+        'cardano',
+        'tron'
+      ]))
+      if(error) throw new HTTPException(500, {message: 'Failed to get market data'})
+
+      return c.json({
+        success: true,
+        message: 'Market data returned',
+        data
+      })
+    }
+    catch(error: any) {
+       logger.error(error, ':::Market data') 
+       throw new HTTPException(500, {message: 'Failed to get market data'})
+    }
+  }
+)
+
+
 walletRoute.get('/', ...getWallet);
 
 walletRoute.get('/assets', ...getUserAssets);
@@ -347,5 +409,8 @@ walletRoute.get('/:chainId/:symbol/info', ...getAssetsInfo)
 walletRoute.post('/:chainId/check-token', ...checkTokenAddress)
 walletRoute.post('/:chainId/add-token', ...addTokenHandler)
 walletRoute.put('/update-token', ...updateTokenHandler)
+
+// market
+walletRoute.get('/market-data', ...getMarketDataHandler)
 
 export { walletRoute };

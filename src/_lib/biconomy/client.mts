@@ -21,8 +21,16 @@ const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api
 const bundlerUrlMainnet = (chainId: number) => `https://bundler.biconomy.io/api/v3/${chainId}/0107498c-14fb-4739-b607-c913343474b1`
 
 const ankrRPCUrls = {
-    56: `https://rpc.ankr.com/bsc/8ac326f9677554da21ffdbd8ce72ba4a194ed539e827759440ba90c2075c7770`,
-    97: `https://rpc.ankr.com/bsc_testnet_chapel/8ac326f9677554da21ffdbd8ce72ba4a194ed539e827759440ba90c2075c7770`
+    56: `https://lb.drpc.org/ogrpc?network=bsc&dkey=${process.env.DRPC_KEY}`, // `https://rpc.ankr.com/bsc/8ac326f9677554da21ffdbd8ce72ba4a194ed539e827759440ba90c2075c7770`,
+    97: `https://lb.drpc.org/ogrpc?network=bsc-testnet&dkey=${process.env.DRPC_KEY}`, //`https://rpc.ankr.com/bsc_testnet_chapel/8ac326f9677554da21ffdbd8ce72ba4a194ed539e827759440ba90c2075c7770`
+    1: `https://lb.drpc.org/ogrpc?network=ethereum&dkey=${process.env.DRPC_KEY}`,
+    11155111: `https://lb.drpc.org/ogrpc?network=sepolia&dkey=${process.env.DRPC_KEY}`,
+    8453: `https://lb.drpc.org/ogrpc?network=base&dkey=${process.env.DRPC_KEY}`,
+    84532: `https://lb.drpc.org/ogrpc?network=base-sepolia&dkey=${process.env.DRPC_KEY}`,
+    137: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_KEY}`,
+    80002: `https://lb.drpc.org/ogrpc?network=polygon-amoy&dkey=${process.env.DRPC_KEY}`,
+    42161: `https://lb.drpc.org/ogrpc?network=arbitrum&dkey=${process.env.DRPC_KEY}`,
+    421614: `https://lb.drpc.org/ogrpc?network=arbitrum-sepolia&dkey=${process.env.DRPC_KEY}`,
 }
 
 // return biconomy nexus client with or without paymaster
@@ -35,7 +43,7 @@ export const getNexusClient = async (privateKey: Hex, chainId: number = 84532, w
         account: await toNexusAccount({
             signer: account,
             chain,
-            transport: http((chainId === 56 || chainId === 97)? ankrRPCUrls[chainId] : undefined),
+            transport: http(ankrRPCUrls[chainId] ?? undefined),
         }),
         transport: http(isMainnet? bundlerUrlMainnet(chainId) : bundlerUrl(chainId)),
         paymaster: (withPM && paymasterUrl[chain.id]) ? createBicoPaymasterClient({paymasterUrl: paymasterUrl[chain.id]}) : undefined,

@@ -68,22 +68,26 @@ export const wallet = pgTable('wallets', {
 });
 
 // keypairs table
-export const keypair = pgTable('keypair', {
-  id: tableId(),
-  walletId: text('wallet_id').notNull().references(() => wallet.id, {onDelete: 'cascade'}),
-  privateKey: text(),
-  forNetwork: text('network', { enum: supportedNetworks }),
-  shareA: text(),
-  shareB: text(),
-  sharec: text(),
-  address: text(),
-  mnemonic: text().notNull(),
-  createdAt: timestamp('created_at', {mode: 'date', withTimezone: false }).defaultNow().notNull(),
-})
+// wallets link to keypairs
+// wallets can have multi keypairs from different networks
+// export const keypair = pgTable('keypair', {
+//   id: tableId(),
+//   walletId: text('wallet_id').notNull().references(() => wallet.id, {onDelete: 'cascade'}),
+//   privateKey: text(),
+//   forNetwork: text('network', { enum: supportedNetworks }),
+//   shareA: text(),
+//   shareB: text(),
+//   sharec: text(),
+//   address: text(),
+//   mnemonic: text().notNull(),
+//   createdAt: timestamp('created_at', {mode: 'date', withTimezone: false }).defaultNow().notNull(),
+// })
 
-export const tokens = pgTable('tokens', {
-  id: tableId(),
-})
+// tokens can be added to wallets
+// different wallets can hold different tokens
+// export const tokens = pgTable('tokens', {
+//   id: tableId(),
+// })
 
 export const transaction = pgTable('transaction', {
   id: tableId(),
@@ -163,8 +167,14 @@ export const walletRelation = relations(wallet, ({ one, many }) => ({
   user: one(user, {
     fields: [wallet.userId],
     references: [user.id],
+    relationName: 'user'
   }),
-  keypairs: many(keypair)
+  // guardian: one(user, {
+  //   fields: [wallet.guardianId],
+  //   references: [user.id],
+  //   relationName: 'guardian'
+  // })
+  // keypairs: many(keypair)
 }));
 
 export const guardRequestRelations = relations(guardRequestTable, ({ one }) => ({

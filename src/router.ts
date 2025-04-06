@@ -12,6 +12,7 @@ import { walletRoute } from "./routes/wallet";
 import { userRoute } from "./routes/user";
 import { auth } from "./_lib/shared/auth";
 import { HttpRequestError } from "viem";
+import { scheduleInfoFetch } from "./_lib/utils";
 
 
 export function setupRouter(app: Hono<Env>) {
@@ -41,7 +42,7 @@ export function setupRouter(app: Hono<Env>) {
     c.set('session', session.session);
     return next();
   });
-
+  scheduleInfoFetch()
   const v1App = app.basePath("/api/v1");
 
   // Routes;
@@ -60,7 +61,7 @@ export function setupRouter(app: Hono<Env>) {
     return c.text(`Could not find the route, ${c.req.url}`);
   });
   app.onError((err, c) => {
-    console.error(err, typeof err, {action: 'error-occurred'});
+    console.error(err, typeof err, { action: 'error-occurred' });
     if (err instanceof HttpRequestError) {
       return c.json({
         success: false,
