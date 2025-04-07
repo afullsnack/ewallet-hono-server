@@ -137,7 +137,7 @@ const getUserAssets = appFactory.createHandlers(
                 usdBalance: currentAssetBalance,
                 chainName: nexusClient.account.chain?.name,
                 chainUrl: wallet.chainLogo ?? '',
-                tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
+                tokenUrl: infoData.image['small'] ?? logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
               })
             } else {
               // and price
@@ -164,7 +164,7 @@ const getUserAssets = appFactory.createHandlers(
                 usdBalance: currentAssetBalance,
                 chainName: nexusClient.account.chain?.name,
                 chainUrl: wallet.chainLogo ?? '',
-                tokenUrl: logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
+                tokenUrl: infoData.image['small'] ?? logoAssets.find((logo) => logo.symbol === `${token.symbol === 'USDC' ? '$USDC' : token.symbol}`)?.img_url ?? '',
               })
             }
           }
