@@ -370,7 +370,7 @@ const getMarketDataHandler = appFactory.createHandlers(
       const {data, error} = await tryCatch(getCoingeckoMarketData([
         'bitcoin',
         'ethereum',
-        'tether',
+        'uniswap',
         'ripple',
         'binancecoin',
         'solana',
