@@ -3,12 +3,13 @@ import app from "../../app"
 import { HTTPException } from "hono/http-exception";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { Address, formatEther, Hex, isAddress, parseEther } from "viem";
+import { Address, formatEther, Hex, isAddress, parseEther, parseUnits } from "viem";
 import { getNexusClient, getTransactionEstimate, sendTransaction } from "../../_lib/biconomy/client.mts";
 import { transaction as transactionTable } from "../../db/schema";
 import { tryCatch } from "src/_lib/try-catch";
 import { getQuoteAndExecute, TokenSymbol } from "src/_lib/uniswap/swap.route";
 import { WalletToken } from "src/_lib/utils";
+import { getExplorerTxLink } from "@biconomy/abstractjs";
 
 const transactionRoute = app.createApp();
 
@@ -27,10 +28,15 @@ transactionRoute.get('/', zValidator('header', z.object({id: z.string().optional
       : eq(transaction.sender, user?.id!))
   })
 
+  const transaction = {
+    ...transactions[0],
+    explorerUrl: getExplorerTxLink(transactions[0]?.hash as Hex, Number(transactions[0]?.chainId))
+  }
+
   return c.json({
     success: true,
     message: 'Transaction retrieved',
-    transaction: transactions[0]
+    transaction,
   })
 })
 
@@ -57,15 +63,15 @@ transactionRoute.post(
     const userWithWallet = await getUserWithWallets(user?.id!)
     if (!userWithWallet) throw new HTTPException(404, { message: 'User not found' })
 
-    const chainId = 84532;
+    // const chainId = 84532;
     const pk = userWithWallet.wallets[0]?.privateKey as Address;
-    const nexusClient = await getNexusClient(pk, body.chainId ?? chainId, true)
+    const nexusClient = await getNexusClient(pk, body.chainId, body.chainId===84532)
     const { info, receiver } = await getTransactionEstimate(nexusClient, body.address, parseEther(body.amount.toString(), 'wei'))
     if (!info) throw new HTTPException(400, { message: 'Transaction info not found' })
 
     const [trxInsert] = await db.insert(transactionTable)
       .values({
-        chainId: chainId.toString(),
+        chainId: body.chainId.toString(),
         sender: user?.id,
         type: 'transfer',
         token: body.symbol,
@@ -73,7 +79,7 @@ transactionRoute.post(
         receiver: body.address,
         amount: body.amount.toString(),
         userId: user.id,
-        feePaidBy: (body.chainId !== 84532 || body.chainId !== 8453)? 'User' : 'EnetWallet'
+        feePaidBy: (body.chainId !== 84532)? 'User' : 'EnetWallet'
       }).returning()
 
     const gasFeeEstimate = Number(formatEther(info.callGasLimit, 'wei'))*Number(formatEther(info.maxPriorityFeePerGas, 'wei'))
@@ -107,7 +113,7 @@ transactionRoute.post(
     })
     if (!transaction) throw new HTTPException(404, { message: 'Transaction not found, kindly retry' })
     const wallet = userWithWallet.wallets.find((w) => w.chainId === transaction.chainId)
-    const token = (wallet?.tokens as WalletToken[]).find((t) => t.symbol===transaction.token)
+    const token = (wallet?.tokens as WalletToken[]).find((t) => t.symbol===transaction.token && t.chain.toString() === transaction.chainId)
     const pk = wallet?.privateKey as Address;
     const chainId = Number(transaction.chainId);
     const nexusClient = await getNexusClient(pk, chainId, true)
@@ -115,7 +121,7 @@ transactionRoute.post(
     const { data, error } = await tryCatch(sendTransaction(
       nexusClient,
       transaction.receiver as Address,
-      parseEther(transaction.amount!, 'wei'),
+      token?.isNative? parseEther(transaction.amount!, 'wei') : parseUnits(transaction.amount!, token?.decimals!),
       token?.isNative,
       token?.address as Hex
     ))
@@ -129,7 +135,7 @@ transactionRoute.post(
 
     const { hash, receiver, receipt } = data;
     const [updatedTx] = await db.update(transactionTable)
-      .set({ hash, status: 'complete', fee: formatEther(receipt?.cumulativeGasUsed * receipt.effectiveGasPrice, 'wei') })
+      .set({ hash, status: 'complete', fee: formatEther((receipt?.cumulativeGasUsed) * (receipt.effectiveGasPrice), 'wei') })
       .returning()
 
     return c.json({

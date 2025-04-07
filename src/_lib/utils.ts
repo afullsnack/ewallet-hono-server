@@ -26,6 +26,19 @@ export const generateQR = async (value: string) => {
   return dataUrl;
 }
 
+export const explorerUrls = {
+  [bscTestnet.id]: `${bscTestnet.blockExplorers.default.url}/tx`,
+  [bsc.id]: `${bsc.blockExplorers.default.url}/tx`,
+  [base.id]: `${base.blockExplorers.default.url}/tx`,
+  [baseSepolia.id]: `${baseSepolia.blockExplorers.default.url}/tx`,
+  [polygon.id]: `${polygon.blockExplorers.default.url}/tx`,
+  [polygonAmoy.id]: `${polygonAmoy.blockExplorers.default.url}/tx`,
+  [mainnet.id]: `${mainnet.blockExplorers.default.url}/tx`,
+  [sepolia.id]: `${sepolia.blockExplorers.default.url}/tx`,
+  [arbitrum.id]: `${arbitrum.blockExplorers.default.url}/tx`,
+  [arbitrumSepolia.id]: `${arbitrumSepolia.blockExplorers.default.url}/tx`
+};
+
 export const defaultChainIds = [
   base.id,
   baseSepolia.id, // 84532

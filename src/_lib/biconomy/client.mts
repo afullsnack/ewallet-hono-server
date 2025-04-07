@@ -1,7 +1,7 @@
 
 import { privateKeyToAccount } from "viem/accounts";
 import * as chains from "viem/chains";
-import { Address, Hex, http, zeroAddress, extractChain, createPublicClient, formatEther, erc20Abi } from "viem";
+import { Address, Hex, http, zeroAddress, extractChain, createPublicClient, formatEther, erc20Abi, formatUnits } from "viem";
 import {
   // createMeeClient,
   createSmartAccountClient,
@@ -14,7 +14,7 @@ import {
 
 
 const paymasterUrl = {
-    [chains.base.id]: `https://paymaster.biconomy.io/api/v2/8453/7eH0H99xI.d370d528-6c6e-4089-b646-8947dc387657`,
+    [chains.base.id]: `https://paymaster.biconomy.io/api/v2/8453/G6TaU_LDp.af414bc6-fd28-4eae-80cd-e61741e50ad3`,
     [chains.baseSepolia.id]: `https://paymaster.biconomy.io/api/v2/84532/HJ4A-yoIU.590fc68b-f046-42db-b7b5-9279e73849d4`
 }
 const bundlerUrl = (chainId: number = 84532) => `https://bundler.biconomy.io/api/v3/${chainId}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
@@ -86,17 +86,21 @@ export const sendTransaction = async (nexusClient: NexusClient, receiver: Addres
             console.log("Transaction receipt: ", receipt);
             return {receiver , hash, receipt};
         } else {
-            const {request} = await nexusClient.account.publicClient.simulateContract({
-                address: tokenAddress!,
-                abi: erc20Abi,
-                functionName: 'transfer',
-                args: [receiver, amount]
+            // const {request} = await nexusClient.account.publicClient.simulateContract({
+            // })
+            // const hash = await nexusClient.account.walletClient.writeContract(request as any)
+            const hash = await nexusClient.sendUserOperation({
+                calls: [{
+                    to: tokenAddress!,
+                    abi: erc20Abi,
+                    functionName: 'transfer',
+                    args: [receiver, amount],
+                }]
             })
-            const hash = await nexusClient.account.walletClient.writeContract(request as any)
             console.log("Transaction hash: ", hash);
-            const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-            console.log("Transaction receipt: ", receipt);
-            return {receiver , hash, receipt};
+            const userOp = await nexusClient.waitForUserOperationReceipt({ hash, timeout: 10000*10, retryCount: 3 });
+            console.log("Transaction receipt: ", userOp.receipt);
+            return {receiver , hash: userOp.receipt.transactionHash, receipt: userOp.receipt};
         }
     }
     catch (error) {
@@ -118,7 +122,7 @@ export const getBalance = async (nexusClient: NexusClient, address: Address) => 
     return Number(formatEther(balance, 'wei'));
 }
 
-export const getNonNativeBalance = async (nexusClient: NexusClient, tokenAddress: Address, walletAddress: Address) => {
+export const getNonNativeBalance = async (nexusClient: NexusClient, tokenAddress: Address, walletAddress: Address, decimal: number) => {
     // const chain = extractChain({chains: Object.values(chains) as chains.Chain[], id: chainId});
     // const publicClient = createPublicClient({
     //     chain,
@@ -130,7 +134,7 @@ export const getNonNativeBalance = async (nexusClient: NexusClient, tokenAddress
         functionName: 'balanceOf',
         args: [walletAddress]
     })
-    return Number(formatEther(balance, 'wei'))
+    return Number(formatUnits(balance, decimal))
 }
 
 export const getTokenData = async (nexusClient: NexusClient, tokenAddress: Address) => {

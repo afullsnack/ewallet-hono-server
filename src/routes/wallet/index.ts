@@ -90,6 +90,7 @@ const getUserAssets = appFactory.createHandlers(
     if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
     const assets: (WalletToken & {
+      price: number,
       balance: number,
       pnl24H: number;
       percentPnL24H: number;
@@ -131,6 +132,7 @@ const getUserAssets = appFactory.createHandlers(
               console.log('Percent PnL', (pnl/currentAssetBalance)*100, pnl, currentAssetBalance)
               assets.push({
                 ...token,
+                price: infoData.market_data?.current_price.usd,
                 balance: data,
                 pnl24H: pnl,
                 percentPnL24H: Number.isNaN(pnlPercent)? 0 : pnlPercent,
@@ -144,7 +146,7 @@ const getUserAssets = appFactory.createHandlers(
               if (token.address && !isAddress(token.address)) {
                 throw new Error('Token address is invalid')
               }
-              const { data, error } = await tryCatch(getNonNativeBalance(nexusClient, token.address as Address, wallet.address as Address))
+              const { data, error } = await tryCatch(getNonNativeBalance(nexusClient, token.address as Address, wallet.address as Address, token.decimals))
               if (error) {
                 logger.error('Error:::', error)
                 throw new Error('Failed to get non-native balances')
@@ -158,6 +160,7 @@ const getUserAssets = appFactory.createHandlers(
               console.log('Percent PnL', (pnl/currentAssetBalance)*100, pnl, currentAssetBalance)
               assets.push({
                 ...token,
+                price: infoData.market_data?.current_price.usd,
                 balance: data,
                 pnl24H: pnl,
                 percentPnL24H: Number.isNaN(pnlPercent)? 0 : pnlPercent,
@@ -216,7 +219,10 @@ const getAssetsInfo = appFactory.createHandlers(
       console.log('Price error', priceError)
     }
     const activities = await db.query.transaction.findMany({
-      where: ((trans, { eq, and, or }) => and(eq(trans.token, token.symbol), or(eq(trans.sender, user.id), eq(trans.userId, user.id))))
+      where: ((trans, { eq, and, or }) => and(
+        eq(trans.status, 'complete'),
+        eq(trans.token, token.symbol),
+        or(eq(trans.sender, user.id), eq(trans.userId, user.id))))
     })
 
     return c.json({
