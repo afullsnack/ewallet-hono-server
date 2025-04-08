@@ -63,10 +63,12 @@ transactionRoute.post(
     const userWithWallet = await getUserWithWallets(user?.id!)
     if (!userWithWallet) throw new HTTPException(404, { message: 'User not found' })
 
+    const wallet = userWithWallet.wallets.find((w) => w.chainId === body.chainId.toString())
+    const token = (wallet?.tokens as WalletToken[]).find((t) => t.symbol===body.symbol && t.chain.toString() === body.chainId.toString())
     // const chainId = 84532;
     const pk = userWithWallet.wallets[0]?.privateKey as Address;
     const nexusClient = await getNexusClient(pk, body.chainId, body.chainId===84532)
-    const { info, receiver } = await getTransactionEstimate(nexusClient, body.address, parseEther(body.amount.toString(), 'wei'))
+    const { info, receiver } = await getTransactionEstimate(nexusClient, body.address, token?.isNative? parseEther(body.amount.toString(), 'wei') : parseUnits(body.amount.toString(), token?.decimals!), token?.isNative, token?.address as Address)
     if (!info) throw new HTTPException(400, { message: 'Transaction info not found' })
 
     const [trxInsert] = await db.insert(transactionTable)
