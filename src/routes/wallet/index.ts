@@ -219,9 +219,11 @@ const getAssetsInfo = appFactory.createHandlers(
       console.log('Price error', priceError)
     }
     const activities = await db.query.transaction.findMany({
+      orderBy: (trans, { desc }) => [desc(trans.createdAt)],
       where: ((trans, { eq, and, or }) => and(
         eq(trans.status, 'complete'),
         eq(trans.token, token.symbol),
+        eq(trans.chainId, token.chain.toString()),
         or(eq(trans.sender, user.id), eq(trans.userId, user.id))))
     })
 

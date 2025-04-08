@@ -3,7 +3,7 @@ import app from "../../app"
 import { HTTPException } from "hono/http-exception";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { Address, formatEther, Hex, isAddress, parseEther, parseUnits } from "viem";
+import { Address, formatEther, fromHex, Hex, isAddress, parseEther, parseUnits } from "viem";
 import { getNexusClient, getTransactionEstimate, sendTransaction } from "../../_lib/biconomy/client.mts";
 import { transaction as transactionTable } from "../../db/schema";
 import { tryCatch } from "src/_lib/try-catch";
@@ -84,12 +84,13 @@ transactionRoute.post(
         feePaidBy: (body.chainId !== 84532)? 'User' : 'EnetWallet'
       }).returning()
 
-    const gasFeeEstimate = Number(formatEther(info.callGasLimit, 'wei'))*Number(formatEther(info.maxPriorityFeePerGas, 'wei'))
-    console.log(gasFeeEstimate, ":::esitmate")
+    const gasLimit = typeof info.callGasLimit === 'string'? fromHex(info.callGasLimit, "bigint") : info.callGasLimit;
+    const gasFeeEstimate = Number(formatEther(gasLimit*info.maxPriorityFeePerGas, 'wei'))
+    console.log(gasFeeEstimate, ":::esitmate", gasLimit, 'To fixed', gasFeeEstimate.toFixed(12))
     return c.json({
       success: true,
       message: 'Transaction estimation',
-      gasFee: gasFeeEstimate,
+      gasFee: gasFeeEstimate.toFixed(12),
       receiver: body.address,
       amount: body.amount,
       paidBy: trxInsert?.feePaidBy,
