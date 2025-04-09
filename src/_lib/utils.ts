@@ -213,7 +213,7 @@ export const defaultUSDTTokens = [
   {
     address: '0x55d398326f99059ff775485246999027b3197955',
     decimals: 18,
-    name: 'Tether UDS',
+    name: 'Tether USD',
     symbol: 'USDT',
     chain: bsc.id,
     isTracked: true,
