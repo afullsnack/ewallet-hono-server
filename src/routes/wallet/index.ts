@@ -283,7 +283,7 @@ const addTokenHandler = appFactory.createHandlers(
     const chainWallet = userWallets.wallets.find((w) => w.chainId === params.chainId)
     const tokens = chainWallet?.tokens as WalletToken[]
     console.log('Tokens:::', tokens)
-    if (tokens.some((t: any) => t.symbol === body.symbol && t.address === body.address)) {
+    if (tokens.some((t: any) => t.symbol === body.symbol && t.address.toString().toLowerCase() === body.address.toLowerCase())) {
       console.log('Token exists:::',)
       return c.json({
         success: true,
