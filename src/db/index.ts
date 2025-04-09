@@ -8,7 +8,16 @@ const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 export { db };
 
 // -----------  db repo functions  -------- 
-const { user, wallet, recoveryRequestTable } = schema;
+const { user, wallet, recoveryRequestTable, tokens } = schema;
+export async function updateTokenTable(cgId: string) {
+  const [newToken] = await db.insert(tokens).values({
+    cgId: cgId
+  }).returning();
+  console.log('New Token', newToken)
+}
+export async function getTokenCgIds() {
+  return await db.query.tokens.findMany()
+}
 type UserInsert = typeof user.$inferInsert;
 type UserUpdate = typeof user.$inferSelect;
 type AccountInsert = typeof wallet.$inferInsert;

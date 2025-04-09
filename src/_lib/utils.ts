@@ -12,9 +12,10 @@ import {
   bsc,
   bscTestnet
 } from "viem/chains"
-import { extractChain } from "viem";
+import { Address, extractChain } from "viem";
 import redis from "./cache/redis";
 import cron from "node-cron"
+import { getTokenCgIds } from "../db";
 
 export const generateQR = async (value: string) => {
   const { data: dataUrl, error } = await tryCatch(
@@ -74,7 +75,7 @@ export interface WalletToken {
   chain: number | string;
   isTracked: boolean;
   isNative: boolean;
-  cgId: string;
+  cgId?: string;
 }
 export const defaultNativeTokens: WalletToken[] = defaultChainIds.map((id) => {
   const chain = extractChain({
@@ -337,7 +338,8 @@ export const getCoingeckoTokenIdList = async () => {
   throw new Error(response.statusText ?? 'Failed to fetch id list')
 }
 
-export const getCoingeckoTokenInfo = async (cgId: string, invalidate: boolean = false) => {
+export const getCoingeckoTokenInfo = async (cgId?: string, invalidate: boolean = false) => {
+  if (!cgId) return null
   if (!invalidate) {
     console.log('Cache hit invalidate', invalidate)
     const cacheInfo = await redis.get(`${cgId}:info`);
@@ -373,7 +375,8 @@ export const getCoingeckoTokenInfo = async (cgId: string, invalidate: boolean = 
   console.log('Error', response.status, response.statusText)
   throw new Error(response.statusText ?? 'Failed to fetch id list')
 }
-export const getCoingeckoTokenPrice = async (cgId: string) => {
+export const getCoingeckoTokenPrice = async (cgId?: string) => {
+  if (!cgId) return null
   const cacheInfo = await redis.get(`${cgId}:price`);
   if (cacheInfo) {
     return cacheInfo
@@ -414,18 +417,50 @@ export const getCoingeckoMarketData = async (cgIds: string[]) => {
   throw new Error(response.statusText ?? 'Failed to fetch id list')
 }
 
+export const getTokenIdByAddress = async (platformId: string, tokenAddress: Address) => {
+  const response = await fetch(`https://api.coingecko.com/api/v3/coins/${platformId}/contract/${tokenAddress}`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  if (response.ok) {
+    const data = await response.json() as { id: string }
+    return data.id // GC token id
+  }
 
+  console.log('Error: token info with address', response.status, response.statusText)
+  throw new Error(response.statusText ?? 'Failed to fetch id list')
+}
+
+export const getPlatformId = async (chainId: number) => {
+  const response = await fetch(`https://api.coingecko.com/api/v3/asset_platforms`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  if (response.ok) {
+    const data = await response.json() as { id: string; chain_identifier: number }[]
+    const platform_id = data.find((d) => d.chain_identifier === chainId)?.id;
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    return platform_id // GC platform id
+  }
+
+  console.log('Error: token info with address', response.status, response.statusText)
+  throw new Error(response.statusText ?? 'Failed to fetch id list')
+}
+
+// export const cgIds = [
+//   'binancecoin',
+//   'matic-network',
+//   'ethereum',
+//   'l2-standard-bridged-weth-base',
+//   'usd-coin',
+//   'tether'
+// ]
 export const scheduleInfoFetch = () => {
-  const cgIds = [
-    'binancecoin',
-    'matic-network',
-    'ethereum',
-    'l2-standard-bridged-weth-base',
-    'usd-coin',
-    'tether'
-  ]
-  cron.schedule('*/2 * * * *', async () => {
+  cron.schedule('*/30 * * * *', async () => {
     console.log('running a task every minute 1-5');
+    const cgIds = await getTokenCgIds();
     for (const id of cgIds) {
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/${id}?market_data=true&developer_data=false&community_data=false&tickers=true`, {
         headers: {

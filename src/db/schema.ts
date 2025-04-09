@@ -85,9 +85,10 @@ export const wallet = pgTable('wallets', {
 
 // tokens can be added to wallets
 // different wallets can hold different tokens
-// export const tokens = pgTable('tokens', {
-//   id: tableId(),
-// })
+export const tokens = pgTable('tokens', {
+  id: tableId(),
+  cgId: text()
+})
 
 export const transaction = pgTable('transaction', {
   id: tableId(),
