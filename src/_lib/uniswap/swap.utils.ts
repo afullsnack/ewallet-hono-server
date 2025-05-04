@@ -51,7 +51,7 @@ export const CurrentConfig = {
   },
   tokens: {
     in: ETH_BASE,
-    amountIn: 1,
+    amountIn: 0.00095,
     out: USDC_TOKEN,
     poolFee: FeeAmount.MEDIUM
   }

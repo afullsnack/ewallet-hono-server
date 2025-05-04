@@ -90,7 +90,7 @@ export const getQuoteAndExecute = async ({
     const amount = parseUnits(SwapConfig.tokens.amountIn.toString(), SwapConfig.tokens.in.decimals);
     console.log(swapRouterAddress, amount, ":::approve function input")
 
-    const nexusClient = await getNexusClient(userPK, base.id, false, true)
+    const nexusClient = await getNexusClient(userPK, base.id, false)
     const approveGas = await nexusClient.estimateUserOperationGas({
       calls: [
         {
@@ -136,12 +136,12 @@ export const getQuoteAndExecute = async ({
       maxFeePerGas: BigInt(1000),
       maxPriorityFeePerGas: BigInt(10000)
     })
-    const receipt = await nexusClient.waitForTransactionReceipt({ hash })
-    console.log('Approve Receipt:::', receipt)
+    const approveUserOp = await nexusClient.waitForUserOperationReceipt({ hash, timeout: 10000+10, retryCount: 3 })
+    console.log('Approve Receipt:::', approveUserOp.receipt)
 
 
     // Send the transaction using viem
-    const swapHash = await nexusClient.sendTransaction({
+    const swapHash = await nexusClient.sendUserOperation({
       calls: [{
         to: SWAP_ROUTER_02_ADDRESSES(baseSepolia.id) as Hex,
         data: route.methodParameters?.calldata as `0x${string}`,
@@ -152,8 +152,8 @@ export const getQuoteAndExecute = async ({
     });
 
     // Wait for the transaction to be mined
-    const swapreceipt = await nexusClient.waitForTransactionReceipt({ hash: swapHash });
-    console.log('SwapReceipt', swapreceipt)
+    const swapUserOp = await nexusClient.waitForUserOperationReceipt({ hash: swapHash, timeout: 10000*10, retryCount: 3 });
+    console.log('SwapReceipt', swapUserOp.receipt)
   }
   catch (error: any) {
     console.log('Errror Executing:::', error)
