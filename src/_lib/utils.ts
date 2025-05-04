@@ -368,8 +368,8 @@ export const getCoingeckoTokenInfo = async (cgId?: string, invalidate: boolean =
       contract_address: string;
       market_data: any
     }
-    await redis.set(`${cgId}:info`, JSON.stringify(data), { ex: 8 * 60 * 60 })
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await redis.set(`${cgId}:info`, JSON.stringify(data), { ex: 12 * 60 * 60 })
+    await new Promise((resolve) => setTimeout(resolve, 8000))
     return data;
   }
   console.log('Error', response.status, response.statusText)
