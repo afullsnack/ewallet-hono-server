@@ -28,7 +28,7 @@ export const updateUserHandlers = appFactory.createHandlers(
       }
     );
 
-    const { error } = await tryCatch(updateUser(user.id, {
+    const { error, data } = await tryCatch(updateUser(user.id, {
       ...body
     }));
 
@@ -36,7 +36,8 @@ export const updateUserHandlers = appFactory.createHandlers(
 
     return c.json({
       'success': true,
-      'message': 'User update successfully'
+      'message': 'User update successfully',
+      data
     }, 200);
   }
 )
