@@ -1,7 +1,44 @@
 import { extractChain } from "viem";
 import { base, baseSepolia, mainnet, sepolia, polygon, polygonAmoy, arbitrum, arbitrumSepolia, bsc, bscTestnet } from "viem/chains";
-import { defaultChainIds } from "./utils";
 
+export const explorerUrls = {
+  [bscTestnet.id]: `${bscTestnet.blockExplorers.default.url}/tx`,
+  [bsc.id]: `${bsc.blockExplorers.default.url}/tx`,
+  [base.id]: `${base.blockExplorers.default.url}/tx`,
+  [baseSepolia.id]: `${baseSepolia.blockExplorers.default.url}/tx`,
+  [polygon.id]: `${polygon.blockExplorers.default.url}/tx`,
+  [polygonAmoy.id]: `${polygonAmoy.blockExplorers.default.url}/tx`,
+  [mainnet.id]: `${mainnet.blockExplorers.default.url}/tx`,
+  [sepolia.id]: `${sepolia.blockExplorers.default.url}/tx`,
+  [arbitrum.id]: `${arbitrum.blockExplorers.default.url}/tx`,
+  [arbitrumSepolia.id]: `${arbitrumSepolia.blockExplorers.default.url}/tx`
+};
+
+export const defaultChainIds = [
+  base.id,
+  baseSepolia.id, // 84532
+  mainnet.id,
+  sepolia.id,
+  polygon.id,
+  polygonAmoy.id,
+  arbitrum.id,
+  arbitrumSepolia.id,
+  bsc.id,
+  bscTestnet.id
+]
+
+export const chainLogos: Record<number, string> = {
+  [sepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+  [mainnet.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+  [bsc.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
+  [bscTestnet.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
+  [polygon.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png',
+  [polygonAmoy.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png',
+  [arbitrum.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png',
+  [arbitrumSepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png',
+  [base.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27716.png',
+  [baseSepolia.id]: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27716.png'
+}
 
 // maybe add default USDc and USDt addresses to the default network
 export interface WalletToken {
