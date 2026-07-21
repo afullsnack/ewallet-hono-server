@@ -6,6 +6,7 @@ import { db } from "../../db"
 
 export const baseURL = process.env.BETTER_AUTH_URL;
 export const auth = betterAuth({
+	baseURL,
   database: drizzleAdapter(db, { provider: 'pg' }),
   plugins: [
     expo()
@@ -30,10 +31,11 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: 'ewallet'
-  },
+	},
   trustedOrigins: [
     'ewallet://',
     'exp://192.168.1.37:8081/--',
-    'exp://192.168.1.38:8081/--'
+		'exp://192.168.1.38:8081/--',
+    'exp://'
   ]
 });

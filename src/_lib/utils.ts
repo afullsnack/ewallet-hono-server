@@ -1,18 +1,6 @@
 import QRCode from "qrcode";
 import { tryCatch } from "./try-catch";
-import {
-  base,
-  baseSepolia,
-  mainnet,
-  sepolia,
-  polygon,
-  polygonAmoy,
-  arbitrum,
-  arbitrumSepolia,
-  bsc,
-  bscTestnet
-} from "viem/chains"
-import { Address, extractChain } from "viem";
+import { Address } from "viem";
 import redis from "./cache/redis";
 import cron from "node-cron"
 
