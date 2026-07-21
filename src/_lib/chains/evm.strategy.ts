@@ -82,12 +82,12 @@ export class EVMChainStrategy extends BaseChainStrategy {
 
 
   async recoverAccount(params: AccountRecoveryInput): Promise<AccountRecoveryResult & { address: string }> {
-    const account = await getWalletWithUser(params.walletId);
-    if (!account) throw new Error('Wallet not found');
-    if (!account.recoveryPassword) {
+    const walletAccount = await getWalletWithUser(params.walletId);
+    if (!walletAccount) throw new Error('Wallet not found');
+    if (!walletAccount.recoveryPassword) {
       throw new Error('Password has not been set, wallet has not been created');
     }
-    const isValidPassword = CryptoUtil.verify(account.recoveryPassword, params.password);
+    const isValidPassword = CryptoUtil.verify(walletAccount.recoveryPassword, params.password);
 
     if (isValidPassword) {
       // const shares = [
@@ -114,7 +114,7 @@ export class EVMChainStrategy extends BaseChainStrategy {
       const nClient = await getNexusClient(`${walletPK}`);
       const smartAddress = nClient.account.address;
       // const privateKey = CryptoUtil.decrypt(encryptedPK.toString(), params.password);
-      const user = await getUserWithWallets(account.user.id)
+      const user = await getUserWithWallets(walletAccount.user.id)
       if (!user) throw new Error('User with wallet not found')
 
       const defaultTokens = defaultNativeTokens.concat(defaultUSDTTokens, defaultUSDCTokens);
@@ -137,16 +137,16 @@ export class EVMChainStrategy extends BaseChainStrategy {
           network: this.networkSlug as any,
           address: smartAddress,
           // ...account,
-          shareA: account.shareA,
-          shareB: account.shareB,
-          shareC: account.shareC,
-          isBackedUp: account.isBackedUp,
+          shareA: walletAccount.shareA,
+          shareB: walletAccount.shareB,
+          shareC: walletAccount.shareC,
+          isBackedUp: walletAccount.isBackedUp,
           userId: user.id,
           privateKey: walletPK,
           chainId: id.toString(),
           chainLogo: chainLogos[id],
           tokens: defaultTokens.filter((token) => token.chain === id),
-          recoveryPassword: account.recoveryPassword,
+          recoveryPassword: walletAccount.recoveryPassword,
         })
       })
       console.log("Wallet promises:::", addWalletsPromises)

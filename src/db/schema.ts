@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { customType, pgTable, text, boolean, json, timestamp } from "drizzle-orm/pg-core";
-import { defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "src/_lib/utils";
+import { defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "src/_lib/default-token";
 import { v4 as uuidv4 } from "uuid";
 
 /// TODO: split file into various schema files with handlers/repo files on the same level

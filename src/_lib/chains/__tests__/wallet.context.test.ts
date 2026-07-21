@@ -13,26 +13,26 @@ const userId = 'usr_sdonbasodvoboasv';
 
 test("should create evm accounts", async () => {
   const walletContext = new WalletContext('evm');
-  const account = await walletContext.createAccount({userId});
-  console.log(account, ":::evm account created");
-  mnemonic = account.mnemonic;
-  address = account.accounts[0].address;
-  privateKey = account.accounts[0].privateKey;
-  expect(account).toHaveProperty('mnemonic');
-  expect(account).toHaveProperty('accounts');
-  expect(account.accounts.length).toBeGreaterThan(0);
+  const walletAccount = await walletContext.createAccount({userId});
+  console.log(walletAccount, ":::evm account created");
+  mnemonic = walletAccount.mnemonic;
+  address = walletAccount.accounts[0].address;
+  privateKey = walletAccount.accounts[0].privateKey;
+  expect(walletAccount).toHaveProperty('mnemonic');
+  expect(walletAccount).toHaveProperty('accounts');
+  expect(walletAccount.accounts.length).toBeGreaterThan(0);
 }, TEST_CONFIG)
 
 
 // test 3 - test account persistence with the same mnemonic
 test("should re-create the same account with the same mnemonic", async () => {
   const walletContext = new WalletContext('evm');
-  const account = await walletContext.createAccount({ mnemonic, userId });
-  console.log(account, ":::evm account created");
+  const walletAccount = await walletContext.createAccount({ mnemonic, userId });
+  console.log(walletAccount, ":::evm account created");
 
-  const newAddress = account.accounts[0].address;
-  const newPrivateKey = account.accounts[0].privateKey;
-  const newMnemonic = account.mnemonic;
+  const newAddress = walletAccount.accounts[0].address;
+  const newPrivateKey = walletAccount.accounts[0].privateKey;
+  const newMnemonic = walletAccount.mnemonic;
 
   expect(newAddress).toEqual(address);
   expect(newMnemonic).toEqual(mnemonic);
@@ -46,11 +46,11 @@ test("should create keys, split to shares and save in db", async () => {
   try {
     const password = 'kiloBYTE1234!';
     const walletContext = new WalletContext("evm");
-    const account = await walletContext.createAccount({
+    const walletAccount = await walletContext.createAccount({
       password,
       userId
     });
-    console.log(account, ":::created account");
+    console.log(walletAccount, ":::created account");
   }
   catch (error: any) {
     console.log(error, { action: 'creatig-account' });
@@ -76,4 +76,3 @@ test.only("should recover keys with with password and backup db", async () => {
     throw error;
   }
 }, TEST_CONFIG);
-
