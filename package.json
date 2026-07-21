@@ -9,7 +9,8 @@
     "db:migrate": "npx drizzle-kit migrate",
     "db:studio": "npx drizzle-kit studio --verbose",
     "test": "pnpm with-env vitest run",
-    "with-env": "dotenv -e .env --"
+    "with-env": "dotenv -e .env --",
+    "prestart": "npx drizzle-kit push"
   },
   "type": "module",
   "dependencies": {
