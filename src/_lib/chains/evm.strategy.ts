@@ -5,7 +5,7 @@ import { CryptoUtil } from "../helpers/hasher";
 import { KeyManager } from "../key-manager/key-manager.service";
 import { addWalletToUser, db, getUserWithWallets, getWalletWithUser } from "../../db";
 import { getNexusClient } from "../biconomy/client.mts";
-import { chainLogos, defaultChainIds, defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "../utils";
+import { chainLogos, defaultChainIds, defaultNativeTokens, defaultUSDCTokens, defaultUSDTTokens } from "../default-token";
 import { wallet } from "src/db/schema";
 import { eq } from "drizzle-orm";
 
