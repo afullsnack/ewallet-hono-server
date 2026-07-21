@@ -27,7 +27,7 @@ const getUserHandlers = appFactory.createHandlers(async (c) => {
   const user = await getUserWithWallets(session.userId)
   if (!user) throw new HTTPException(404, { message: 'User was not found in db' });
 
-  return c.json({ user }, 200);
+  return c.json({ ...user }, 200);
 })
 
 

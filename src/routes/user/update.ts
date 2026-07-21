@@ -1,23 +1,22 @@
-import { effectValidator } from "@hono/effect-validator";
+import {zValidator} from "@hono/zod-validator"
+import {z} from "zod"
 import appFactory from "../../app";
 import { Schema } from "@effect/schema";
 import { updateUser } from "../../db";
 import { HTTPException } from "hono/http-exception";
 import { tryCatch } from "../../_lib/try-catch";
 
-const Body = Schema.Struct({
-  username: Schema.String,
-  isFullyOnboarded: Schema.Boolean
+const BodySchema = z.object({
+  username: z.string().optional().nullable(),
+  isFullyOnboarded: z.boolean().optional().nullable()
 });
 
 export const updateUserHandlers = appFactory.createHandlers(
-  effectValidator('json', Body),
+  zValidator('json', BodySchema),
   async (c) => {
-
     const body = c.req.valid('json');
     const user = c.get('user');
 
-    console.log(user, ':::user in current session');
     console.log(body, ':::body');
 
     if (!user) throw new HTTPException(
@@ -29,7 +28,7 @@ export const updateUserHandlers = appFactory.createHandlers(
       }
     );
 
-    const { error } = await tryCatch(updateUser(user.id, {
+    const { error, data } = await tryCatch(updateUser(user.id, {
       ...body
     }));
 
@@ -37,7 +36,8 @@ export const updateUserHandlers = appFactory.createHandlers(
 
     return c.json({
       'success': true,
-      'message': 'User update successfully'
+      'message': 'User update successfully',
+      data
     }, 200);
   }
 )

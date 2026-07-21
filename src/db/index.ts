@@ -7,7 +7,7 @@ const db = drizzle(process.env.POSTGRES_DB_URL!, { schema });
 // const db = drizzle(process.env.POSTGRES_DB_DEV_URL!, {schema})
 export { db };
 
-// -----------  db repo functions  -------- 
+// -----------  db repo functions  --------
 const { user, wallet, recoveryRequestTable, tokens } = schema;
 export async function updateTokenTable(cgId: string) {
   const [newToken] = await db.insert(tokens).values({
